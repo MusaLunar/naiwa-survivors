@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>奶蛙幸存者 · 奶蛙艺术圣殿外传</title>
+    <link rel="icon" type="image/webp" href="./assets/gallery/brand-logo.webp" />
+  </head>
+  <body>
+    <div id="loading-overlay" class="loading-overlay">
+      <div class="loading-box">
+        <img src="./assets/gallery/brand-logo.webp" alt="奶蛙艺术圣殿" width="84" height="84" />
+        <h2>正在开启奶蛙艺术圣殿…</h2>
+        <div class="progress-track"><div id="loading-bar" class="progress-fill"></div></div>
+        <p id="loading-text">加载馆藏精灵 0%</p>
+      </div>
+    </div>
+
+    <div id="lobby-view" class="lobby-shell"></div>
+
+    <section id="stage-layer" class="stage-layer" hidden aria-label="圣殿生存战场">
+      <canvas id="game-canvas"></canvas>
+
+      <div class="hud-top">
+        <div class="xp-bar-wrap" aria-label="经验值">
+          <div id="hud-xp-fill" class="xp-bar-fill"></div>
+          <span id="hud-level" class="xp-level-label">Lv.1</span>
+        </div>
+
+        <div class="hud-meta-row">
+          <div class="hud-slots">
+            <div id="hud-weapon-slots" class="slot-strip" aria-label="已装备武器"></div>
+            <div id="hud-passive-slots" class="slot-strip" aria-label="已装备圣物"></div>
+          </div>
+
+          <div class="hud-timer" id="hud-timer">00:00</div>
+
+          <div class="hud-right-stats">
+            <span class="hud-stat">击退 <strong id="hud-kills">0</strong></span>
+            <span class="hud-stat">功德 <strong id="hud-gold">0</strong></span>
+            <button id="hud-pause-btn" type="button" class="btn-hud" aria-label="暂停游戏">暂停</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="boss-banner" class="boss-banner" hidden>
+        <img id="boss-banner-img" src="" alt="" hidden />
+        <div>
+          <strong id="boss-banner-title"></strong>
+          <p id="boss-banner-sub"></p>
+        </div>
+      </div>
+
+      <button id="touch-skill-btn" class="touch-skill-btn is-ready" type="button" aria-label="释放主动技能">
+        <span class="skill-btn-ring" aria-hidden="true"></span>
+        <img id="touch-skill-img" src="" alt="" />
+        <span id="touch-skill-cd" class="skill-btn-cd" hidden></span>
+        <span id="touch-skill-name" class="skill-btn-name">主动技</span>
+        <span class="skill-btn-key">空格 / 点击</span>
+      </button>
+    </section>
+
+    <dialog id="levelup-dialog" class="sanctuary-dialog" closedby="none" aria-labelledby="levelup-title">
+      <div class="dialog-head">
+        <h2 id="levelup-title">圣殿赐福 · 升级强化</h2>
+        <span id="levelup-queue-badge" class="badge-gold">择一纳福</span>
+      </div>
+      <div id="levelup-cards" class="choice-list"></div>
+    </dialog>
+
+    <dialog id="chest-dialog" class="sanctuary-dialog" closedby="none" aria-labelledby="chest-title">
+      <div class="dialog-head">
+        <h2 id="chest-title">开启圣殿密匣</h2>
+        <span class="badge-gold">名画嘉奖</span>
+      </div>
+      <div id="chest-reward-body"></div>
+      <div class="dialog-actions">
+        <button id="chest-claim-btn" type="button" class="btn-primary" autofocus>收下嘉奖</button>
+      </div>
+    </dialog>
+
+    <dialog id="pause-dialog" class="sanctuary-dialog" closedby="any" aria-labelledby="pause-title">
+      <div class="dialog-head">
+        <h2 id="pause-title">圣殿暂歇</h2>
+        <button type="button" class="btn-close-x" onclick="this.closest('dialog')?.close('resume')" aria-label="关闭暂停弹窗">×</button>
+      </div>
+      <div id="pause-build-summary" class="pause-summary"></div>
+      <div class="settings-grid">
+        <label><input id="pause-sfx-toggle" type="checkbox" /> 开启音效</label>
+        <label><input id="pause-bgm-toggle" type="checkbox" /> 开启圣殿节拍</label>
+        <label><input id="pause-shake-toggle" type="checkbox" /> 受击屏幕震动</label>
+        <label><input id="pause-dmg-toggle" type="checkbox" /> 显示伤害数字</label>
+      </div>
+      <div class="dialog-actions">
+        <button id="pause-quit-btn" type="button" class="btn-secondary">撤离回圣殿（保留已拾功德）</button>
+        <button id="pause-resume-btn" type="button" class="btn-primary" autofocus>继续战斗</button>
+      </div>
+    </dialog>
+
+    <dialog id="codex-dialog" class="sanctuary-dialog dialog-wide" closedby="any" aria-labelledby="codex-title">
+      <div class="dialog-head">
+        <div>
+          <h2 id="codex-title">奶蛙艺术圣殿 · 馆藏图鉴</h2>
+          <p id="codex-count" class="codex-subtitle"></p>
+        </div>
+        <div class="codex-head-tools">
+          <label class="toggle-inline"><input id="codex-preview-toggle" type="checkbox" /> 馆长全览模式</label>
+          <form method="dialog">
+            <button id="codex-close-btn" type="submit" class="btn-secondary" autofocus>关闭图鉴</button>
+          </form>
+        </div>
+      </div>
+      <div id="codex-tabs" class="codex-tabs"></div>
+      <div class="codex-layout">
+        <div id="codex-grid" class="codex-grid"></div>
+        <aside id="codex-detail" class="codex-detail"></aside>
+      </div>
+    </dialog>
+
+    <dialog id="result-dialog" class="sanctuary-dialog" closedby="none" aria-labelledby="result-title">
+      <div class="dialog-head">
+        <h2 id="result-title">战局结算</h2>
+      </div>
+      <p id="result-subtitle" class="result-sub"></p>
+      <div id="result-stats"></div>
+      <div class="dialog-actions">
+        <button id="result-endless-btn" type="button" class="btn-secondary" hidden>继续无尽狂潮</button>
+        <button id="result-lobby-btn" type="button" class="btn-primary" autofocus>返回艺术圣殿</button>
+      </div>
+    </dialog>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

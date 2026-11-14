@@ -1,0 +1,1203 @@
+{
+  "attribution": {
+    "repo": "Orliss/nailong",
+    "url": "https://github.com/Orliss/nailong",
+    "license": "MIT",
+    "notice": "素材源自 Orliss/nailong（奶蛙艺术圣殿官方素材仓库，MIT 协议），奶蛙角色衍生仅供非商业粉丝二创交流。"
+  },
+  "logoUrl": "assets/gallery/brand-logo.webp",
+  "sprites": {
+    "hero-classic": {
+      "id": "hero-classic",
+      "role": "hero",
+      "title": "奶蛙-亮黄站姿",
+      "lore": "标准的亮黄站姿，绿眼圆睁——奶蛙最本真的模样。",
+      "sourcePath": "laugh-gallery/奶蛙-亮黄站姿.png",
+      "url": "assets/sprites/hero-classic.webp",
+      "width": 210,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "hero-nezha": {
+      "id": "hero-nezha",
+      "role": "hero",
+      "title": "奶蛙-哪吒",
+      "lore": "哪吒发髻、火焰纹、红马甲，神话里的奶蛙合掌大笑。",
+      "sourcePath": "laugh-gallery/奶蛙-哪吒.png",
+      "url": "assets/sprites/hero-nezha.webp",
+      "width": 212,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "hero-santa": {
+      "id": "hero-santa",
+      "role": "hero",
+      "title": "奶蛙-圣诞老人",
+      "lore": "圣诞老人装束，双手交叠，节日的快乐提前送达。",
+      "sourcePath": "laugh-gallery/奶蛙-圣诞老人.png",
+      "url": "assets/sprites/hero-santa.webp",
+      "width": 241,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "hero-kitsune": {
+      "id": "hero-kitsune",
+      "role": "hero",
+      "title": "奶蛙-狐面和服",
+      "lore": "狐狸面具配和服头纱，东瀛风的奶蛙也笑得端庄。",
+      "sourcePath": "laugh-gallery/奶蛙-狐面和服.png",
+      "url": "assets/sprites/hero-kitsune.webp",
+      "width": 233,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "hero-galaxy": {
+      "id": "hero-galaxy",
+      "role": "hero",
+      "title": "奶蛙-银河隐藏款",
+      "lore": "星空文案的隐藏款，每 3.1415926 光年才出现一次。",
+      "sourcePath": "laugh-gallery/奶蛙-银河隐藏款.png",
+      "url": "assets/sprites/hero-galaxy.webp",
+      "width": 256,
+      "height": 256,
+      "cutoutMethod": "medallion"
+    },
+    "laugh-bend": {
+      "id": "laugh-bend",
+      "role": "sprite",
+      "title": "奶蛙-弯腰大笑",
+      "lore": "躬着身子笑到直不起来，快乐重到需要弯腰托住。",
+      "sourcePath": "laugh-gallery/奶蛙-弯腰大笑.png",
+      "url": "assets/sprites/laugh-bend.webp",
+      "width": 272,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "laugh-point": {
+      "id": "laugh-point",
+      "role": "sprite",
+      "title": "奶蛙-叉腰指点",
+      "lore": "叉腰指点，笑里带三分指点江山的豪气。",
+      "sourcePath": "laugh-gallery/奶蛙-叉腰指点.png",
+      "url": "assets/sprites/laugh-point.webp",
+      "width": 266,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "laugh-double-v": {
+      "id": "laugh-double-v",
+      "role": "sprite",
+      "title": "奶蛙-双V大笑",
+      "lore": "双手比出双 V，大笑的胜利者姿态。",
+      "sourcePath": "laugh-gallery/奶蛙-双V大笑.png",
+      "url": "assets/sprites/laugh-double-v.webp",
+      "width": 232,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "laugh-leap": {
+      "id": "laugh-leap",
+      "role": "sprite",
+      "title": "奶蛙-雀跃",
+      "lore": "双臂张开单脚跃起，快乐到飞起来。",
+      "sourcePath": "laugh-gallery/奶蛙-雀跃.png",
+      "url": "assets/sprites/laugh-leap.webp",
+      "width": 227,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "laugh-all-fours": {
+      "id": "laugh-all-fours",
+      "role": "enemy",
+      "title": "奶蛙-四肢着地",
+      "lore": "四肢着地大笑成一座雕塑，快乐就地生根。",
+      "sourcePath": "laugh-gallery/奶蛙-四肢着地.png",
+      "url": "assets/sprites/laugh-all-fours.webp",
+      "width": 191,
+      "height": 183,
+      "cutoutMethod": "cutout"
+    },
+    "laugh-rainbow": {
+      "id": "laugh-rainbow",
+      "role": "enemy",
+      "title": "奶蛙-彩虹渐变",
+      "lore": "彩虹渐变潮玩款，七彩叠在黄皮肤上。",
+      "sourcePath": "laugh-gallery/奶蛙-彩虹渐变.png",
+      "url": "assets/sprites/laugh-rainbow.webp",
+      "width": 266,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "laugh-headhold": {
+      "id": "laugh-headhold",
+      "role": "enemy",
+      "title": "奶蛙-抱头大笑",
+      "lore": "双手抱头大笑，笑意从头顶炸开。",
+      "sourcePath": "laugh-gallery/奶蛙-抱头大笑.png",
+      "url": "assets/sprites/laugh-headhold.webp",
+      "width": 256,
+      "height": 256,
+      "cutoutMethod": "medallion"
+    },
+    "laugh-baby": {
+      "id": "laugh-baby",
+      "role": "enemy",
+      "title": "奶蛙-抱婴大笑",
+      "lore": "怀里抱着小奶蛙一起大笑，快乐会传染。",
+      "sourcePath": "laugh-gallery/奶蛙-抱婴大笑.png",
+      "url": "assets/sprites/laugh-baby.webp",
+      "width": 256,
+      "height": 256,
+      "cutoutMethod": "medallion-fallback"
+    },
+    "laugh-finger": {
+      "id": "laugh-finger",
+      "role": "enemy",
+      "title": "奶蛙-指你大笑",
+      "lore": "伸出手指指向你，笑你，也笑自己。",
+      "sourcePath": "laugh-gallery/奶蛙-指你大笑.png",
+      "url": "assets/sprites/laugh-finger.webp",
+      "width": 275,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "laugh-orange": {
+      "id": "laugh-orange",
+      "role": "enemy",
+      "title": "奶蛙-橙肤捧腹",
+      "lore": "橙色变体捧腹大笑，暖色调的快乐加倍。",
+      "sourcePath": "laugh-gallery/奶蛙-橙肤捧腹.png",
+      "url": "assets/sprites/laugh-orange.webp",
+      "width": 234,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "laugh-white": {
+      "id": "laugh-white",
+      "role": "enemy",
+      "title": "奶蛙-白肤捧腹",
+      "lore": "白色变体捧腹大笑，奶蛙的另一副面孔。",
+      "sourcePath": "laugh-gallery/奶蛙-白肤捧腹.png",
+      "url": "assets/sprites/laugh-white.webp",
+      "width": 256,
+      "height": 256,
+      "cutoutMethod": "medallion-fallback"
+    },
+    "laugh-pink": {
+      "id": "laugh-pink",
+      "role": "enemy",
+      "title": "奶蛙-粉肤捧腹",
+      "lore": "粉色变体捧腹大笑，换个肤色，快乐不打折。",
+      "sourcePath": "laugh-gallery/奶蛙-粉肤捧腹.png",
+      "url": "assets/sprites/laugh-pink.webp",
+      "width": 244,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "laugh-squint": {
+      "id": "laugh-squint",
+      "role": "enemy",
+      "title": "奶蛙-眯眼张嘴",
+      "lore": "眯眼张嘴，笑成一弯快乐的月牙。",
+      "sourcePath": "laugh-gallery/奶蛙-眯眼张嘴.png",
+      "url": "assets/sprites/laugh-squint.webp",
+      "width": 280,
+      "height": 190,
+      "cutoutMethod": "cutout"
+    },
+    "laugh-calm": {
+      "id": "laugh-calm",
+      "role": "sprite",
+      "title": "奶蛙-静站绿眼",
+      "lore": "安安静静站着，绿眼平静，笑藏在肚子里。",
+      "sourcePath": "laugh-gallery/奶蛙-静站绿眼.png",
+      "url": "assets/sprites/laugh-calm.webp",
+      "width": 256,
+      "height": 256,
+      "cutoutMethod": "medallion"
+    },
+    "emote-angry": {
+      "id": "emote-angry",
+      "role": "enemy",
+      "title": "奶蛙-气鼓鼓",
+      "lore": "抿嘴皱眉，气鼓鼓的奶蛙。",
+      "sourcePath": "emotes/奶蛙-气鼓鼓.png",
+      "url": "assets/sprites/emote-angry.webp",
+      "width": 214,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "emote-confused": {
+      "id": "emote-confused",
+      "role": "enemy",
+      "title": "奶蛙-疑惑",
+      "lore": "歪头皱眉，头顶冒出一个大问号。",
+      "sourcePath": "emotes/奶蛙-疑惑.png",
+      "url": "assets/sprites/emote-confused.webp",
+      "width": 237,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "emote-side": {
+      "id": "emote-side",
+      "role": "enemy",
+      "title": "奶蛙-侧立",
+      "lore": "侧身而立，双手放在肚前，安静又圆润。",
+      "sourcePath": "emotes/奶蛙-侧立.png",
+      "url": "assets/sprites/emote-side.webp",
+      "width": 239,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "emote-grin": {
+      "id": "emote-grin",
+      "role": "enemy",
+      "title": "奶蛙-露齿大笑",
+      "lore": "矮胖身材，张嘴露齿，笑得很用力。",
+      "sourcePath": "emotes/奶蛙-露齿大笑.png",
+      "url": "assets/sprites/emote-grin.webp",
+      "width": 213,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "emote-heart": {
+      "id": "emote-heart",
+      "role": "sprite",
+      "title": "奶蛙-吐舌比心",
+      "lore": "歪头吐舌，双手比心——奶蛙的专属告白。",
+      "sourcePath": "emotes/奶蛙-吐舌比心.png",
+      "url": "assets/sprites/emote-heart.webp",
+      "width": 239,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "emote-double-v": {
+      "id": "emote-double-v",
+      "role": "sprite",
+      "title": "奶蛙-双V吐舌",
+      "lore": "双 V 手势配吐舌，活泼到没边。",
+      "sourcePath": "emotes/奶蛙-双V吐舌.png",
+      "url": "assets/sprites/emote-double-v.webp",
+      "width": 280,
+      "height": 127,
+      "cutoutMethod": "cutout"
+    },
+    "emote-cheek": {
+      "id": "emote-cheek",
+      "role": "sprite",
+      "title": "奶蛙-托腮",
+      "lore": "单手托腮，微笑地看着世界。",
+      "sourcePath": "emotes/奶蛙-托腮.png",
+      "url": "assets/sprites/emote-cheek.webp",
+      "width": 208,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "emote-blush": {
+      "id": "emote-blush",
+      "role": "sprite",
+      "title": "奶蛙-红晕托颌",
+      "lore": "手托下巴，脸颊泛红，害羞的模样。",
+      "sourcePath": "emotes/奶蛙-红晕托颌.png",
+      "url": "assets/sprites/emote-blush.webp",
+      "width": 183,
+      "height": 165,
+      "cutoutMethod": "cutout"
+    },
+    "emote-pout": {
+      "id": "emote-pout",
+      "role": "enemy",
+      "title": "奶蛙-微愠",
+      "lore": "脸颊泛红，眉头微蹙，生气的奶蛙也可爱。",
+      "sourcePath": "emotes/奶蛙-微愠.png",
+      "url": "assets/sprites/emote-pout.webp",
+      "width": 256,
+      "height": 256,
+      "cutoutMethod": "medallion"
+    },
+    "emote-nose": {
+      "id": "emote-nose",
+      "role": "sprite",
+      "title": "奶蛙-点鼻",
+      "lore": "手指点着鼻尖，俏皮小动作。",
+      "sourcePath": "emotes/奶蛙-点鼻.png",
+      "url": "assets/sprites/emote-nose.webp",
+      "width": 208,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "emote-squat": {
+      "id": "emote-squat",
+      "role": "sprite",
+      "title": "奶蛙-蹲坐托腮",
+      "lore": "蹲坐在地，双手托腮，温顺等夸奖。",
+      "sourcePath": "emotes/奶蛙-蹲坐托腮.png",
+      "url": "assets/sprites/emote-squat.webp",
+      "width": 213,
+      "height": 280,
+      "cutoutMethod": "cutout"
+    },
+    "item-chalice": {
+      "id": "item-chalice",
+      "role": "nanobanana",
+      "title": "金箔圣杯",
+      "lore": "圣殿纯金打造的祝福圣杯，盛满令人捧腹的欢愉甘露。",
+      "sourcePath": "nanobanana/sheet_relics_1.png#q0",
+      "url": "assets/sprites/item-chalice.webp",
+      "width": 192,
+      "height": 192,
+      "cutoutMethod": "cutout"
+    },
+    "item-wings": {
+      "id": "item-wings",
+      "role": "nanobanana",
+      "title": "雀跃羽翼",
+      "lore": "鎏金雀跃之翼，赐予圣殿行者踏风而行的轻盈步伐。",
+      "sourcePath": "nanobanana/sheet_relics_1.png#q1",
+      "url": "assets/sprites/item-wings.webp",
+      "width": 192,
+      "height": 192,
+      "cutoutMethod": "cutout"
+    },
+    "item-codex": {
+      "id": "item-codex",
+      "role": "nanobanana",
+      "title": "沉思法典",
+      "lore": "镌刻奶蛙托腮哲思的鎏金法典，令圣殿术式长久驻留。",
+      "sourcePath": "nanobanana/sheet_relics_1.png#q2",
+      "url": "assets/sprites/item-codex.webp",
+      "width": 192,
+      "height": 192,
+      "cutoutMethod": "cutout"
+    },
+    "item-sachet": {
+      "id": "item-sachet",
+      "role": "nanobanana",
+      "title": "红晕香囊",
+      "lore": "织金绯红香囊，芬芳催动武器与笑声以更高频律动。",
+      "sourcePath": "nanobanana/sheet_relics_1.png#q3",
+      "url": "assets/sprites/item-sachet.webp",
+      "width": 192,
+      "height": 192,
+      "cutoutMethod": "cutout"
+    },
+    "item-scroll": {
+      "id": "item-scroll",
+      "role": "nanobanana",
+      "title": "雷帝秘卷",
+      "lore": "封印雷帝裁决真言的鎏金卷轴，令一切攻击威能倍增。",
+      "sourcePath": "nanobanana/sheet_relics_2.png#q0",
+      "url": "assets/sprites/item-scroll.webp",
+      "width": 192,
+      "height": 192,
+      "cutoutMethod": "cutout"
+    },
+    "item-hourglass": {
+      "id": "item-hourglass",
+      "role": "nanobanana",
+      "title": "天启沙漏",
+      "lore": "流淌星砂的圣殿沙漏，逆转因果并折射出额外投射物。",
+      "sourcePath": "nanobanana/sheet_relics_2.png#q1",
+      "url": "assets/sprites/item-hourglass.webp",
+      "width": 192,
+      "height": 192,
+      "cutoutMethod": "cutout"
+    },
+    "wpn-icon-oil-lamp": {
+      "id": "wpn-icon-oil-lamp",
+      "role": "nanobanana",
+      "title": "圣殿香油环",
+      "lore": "长明不熄的圣殿鎏金香油灯，环绕护体灼烧近身狂徒。",
+      "sourcePath": "nanobanana/sheet_relics_2.png#q2",
+      "url": "assets/sprites/wpn-icon-oil-lamp.webp",
+      "width": 192,
+      "height": 192,
+      "cutoutMethod": "cutout"
+    },
+    "wpn-icon-sanctuary-wheel": {
+      "id": "wpn-icon-sanctuary-wheel",
+      "role": "nanobanana",
+      "title": "永恒香油大结界",
+      "lore": "八辐炽金香油圣轮，化作不可侵犯的永恒圣殿结界。",
+      "sourcePath": "nanobanana/sheet_relics_2.png#q3",
+      "url": "assets/sprites/wpn-icon-sanctuary-wheel.webp",
+      "width": 192,
+      "height": 192,
+      "cutoutMethod": "cutout"
+    },
+    "pickup-chest": {
+      "id": "pickup-chest",
+      "role": "nanobanana",
+      "title": "圣殿密匣",
+      "lore": "收纳名画嘉奖与丰厚香油功德的黑曜鎏金密匣。",
+      "sourcePath": "nanobanana/sheet_pickups.png#q0",
+      "url": "assets/sprites/pickup-chest.webp",
+      "width": 192,
+      "height": 192,
+      "cutoutMethod": "cutout"
+    },
+    "pickup-gold": {
+      "id": "pickup-gold",
+      "role": "nanobanana",
+      "title": "香油功德币",
+      "lore": "铸有奶蛙笑颜的圣殿纯金功德币。",
+      "sourcePath": "nanobanana/sheet_pickups.png#q1",
+      "url": "assets/sprites/pickup-gold.webp",
+      "width": 192,
+      "height": 192,
+      "cutoutMethod": "cutout"
+    },
+    "pickup-meat": {
+      "id": "pickup-meat",
+      "role": "nanobanana",
+      "title": "圣餐蜜瓜包",
+      "lore": "刚出炉的鎏金酥皮蜜瓜包，瞬间抚平战斗创伤。",
+      "sourcePath": "nanobanana/sheet_pickups.png#q2",
+      "url": "assets/sprites/pickup-meat.webp",
+      "width": 192,
+      "height": 192,
+      "cutoutMethod": "cutout"
+    },
+    "pickup-magnet": {
+      "id": "pickup-magnet",
+      "role": "nanobanana",
+      "title": "功德磁印",
+      "lore": "铭刻引流符文的马蹄金磁，将四方晶石尽数吸入囊中。",
+      "sourcePath": "nanobanana/sheet_pickups.png#q3",
+      "url": "assets/sprites/pickup-magnet.webp",
+      "width": 192,
+      "height": 192,
+      "cutoutMethod": "cutout"
+    },
+    "wpn-icon-heart-star": {
+      "id": "wpn-icon-heart-star",
+      "role": "nanobanana",
+      "title": "无限告白星雨",
+      "lore": "生有金翼的绯红结晶比心，漫天散射追踪告白星雨。",
+      "sourcePath": "nanobanana/sheet_evolutions.png#q0",
+      "url": "assets/sprites/wpn-icon-heart-star.webp",
+      "width": 192,
+      "height": 192,
+      "cutoutMethod": "cutout"
+    },
+    "wpn-icon-tsunami-bell": {
+      "id": "wpn-icon-tsunami-bell",
+      "role": "nanobanana",
+      "title": "圣殿大笑海啸",
+      "lore": "震荡圣殿穹顶的鎏金狂笑洪钟，掀起金色音波海啸。",
+      "sourcePath": "nanobanana/sheet_evolutions.png#q1",
+      "url": "assets/sprites/wpn-icon-tsunami-bell.webp",
+      "width": 192,
+      "height": 192,
+      "cutoutMethod": "cutout"
+    },
+    "pickup-xp-gem": {
+      "id": "pickup-xp-gem",
+      "role": "nanobanana",
+      "title": "圣殿经验晶石",
+      "lore": "凝结大笑灵韵的圣殿棱晶，拾取后积蓄赐福经验。",
+      "sourcePath": "nanobanana/sheet_evolutions.png#q2",
+      "url": "assets/sprites/pickup-xp-gem.webp",
+      "width": 192,
+      "height": 192,
+      "cutoutMethod": "cutout"
+    },
+    "zone-liberty-crest": {
+      "id": "zone-liberty-crest",
+      "role": "nanobanana",
+      "title": "自由圣旗法阵",
+      "lore": "烙印大地的鎏金圣殿徽记，持续净化踏入其中的敌潮。",
+      "sourcePath": "nanobanana/sheet_evolutions.png#q3",
+      "url": "assets/sprites/zone-liberty-crest.webp",
+      "width": 192,
+      "height": 192,
+      "cutoutMethod": "cutout"
+    }
+  },
+  "medallions": {
+    "boss-alps": {
+      "id": "boss-alps",
+      "title": "奶破蛙翻越阿尔卑斯山",
+      "lore": "翻越阿尔卑斯的奶蛙坐骑昂首嘶鸣。山巅风雪刺骨，它的笑自带春意。",
+      "sourcePath": "classic/奶破蛙翻越阿尔卑斯山.jpg",
+      "url": "assets/medallions/boss-alps.webp",
+      "width": 256,
+      "height": 256
+    },
+    "boss-four-horsemen": {
+      "id": "boss-four-horsemen",
+      "title": "天启四奶蛙",
+      "lore": "雪山荒原上，四骑士策马而来。走近才看清，马背上是四只抱团取暖的奶蛙。末日，被可爱化了。",
+      "sourcePath": "classic/天启四奶蛙.jpg",
+      "url": "assets/medallions/boss-four-horsemen.webp",
+      "width": 256,
+      "height": 256
+    },
+    "boss-judgment": {
+      "id": "boss-judgment",
+      "title": "大天使长的最后审判",
+      "lore": "末日号角吹响，烈焰中的众生换上了同款黄脸。审判长是奶蛙——最后的罪名，只有一条：不够快乐。",
+      "sourcePath": "classic/大天使长的最后审判.jpg",
+      "url": "assets/medallions/boss-judgment.webp",
+      "width": 256,
+      "height": 256
+    },
+    "boss-thunder": {
+      "id": "boss-thunder",
+      "title": "奶蛙雷帝杀龙",
+      "lore": "雷帝挥剑斩向恶龙，恶龙看见奶蛙先笑为敬。胜负未分，杀气先被可爱化解。",
+      "sourcePath": "classic/奶蛙雷帝杀龙.jpg",
+      "url": "assets/medallions/boss-thunder.webp",
+      "width": 256,
+      "height": 256
+    },
+    "boss-creation": {
+      "id": "boss-creation",
+      "title": "创造奶蛙",
+      "lore": "指尖将触未触，神与奶蛙隔着光对望。宇宙的第一粒快乐，就从这里被点亮。",
+      "sourcePath": "classic/创造奶蛙_02.jpg",
+      "url": "assets/medallions/boss-creation.webp",
+      "width": 256,
+      "height": 256
+    },
+    "boss-liberty": {
+      "id": "boss-liberty",
+      "title": "自由引导奶蛙",
+      "lore": "自由女神高举旗帜，奶蛙冲在最前引路。人人都是主角，快乐是唯一的纲领。",
+      "sourcePath": "classic/自由引导奶蛙.jpg",
+      "url": "assets/medallions/boss-liberty.webp",
+      "width": 256,
+      "height": 256
+    },
+    "boss-nightwatch": {
+      "id": "boss-nightwatch",
+      "title": "奶蛙夜巡",
+      "lore": "伦勃朗《夜巡》竖屏版——夜色队伍里，奶蛙举枪站得笔直，阴影都被它照暖。",
+      "sourcePath": "classic/奶蛙夜巡_02.jpg",
+      "url": "assets/medallions/boss-nightwatch.webp",
+      "width": 256,
+      "height": 256
+    },
+    "boss-logo": {
+      "id": "boss-logo",
+      "title": "奶蛙-logo",
+      "lore": "奶蛙-logo —— 奶蛙艺术圣殿馆藏。",
+      "sourcePath": "assets/奶蛙-logo.jpg",
+      "url": "assets/medallions/boss-logo.webp",
+      "width": 256,
+      "height": 256
+    }
+  },
+  "tiles": {
+    "tile-sanctuary": {
+      "id": "tile-sanctuary",
+      "title": "圣殿黑曜金箔地砖",
+      "sourcePath": "nanobanana/tile_sanctuary.png",
+      "url": "assets/tiles/tile-sanctuary.webp",
+      "width": 256,
+      "height": 256
+    },
+    "tile-nightwatch": {
+      "id": "tile-nightwatch",
+      "title": "夜巡石板暗金地砖",
+      "sourcePath": "nanobanana/tile_nightwatch.png",
+      "url": "assets/tiles/tile-nightwatch.webp",
+      "width": 256,
+      "height": 256
+    }
+  },
+  "gallery": [
+    {
+      "id": "classic-001",
+      "category": "classic",
+      "title": "最唐的晚餐",
+      "lore": "《最唐的晚餐》_02——奶蛙主演的古典名画再创作，庄严被一只奶蛙重新加冕。",
+      "sourcePath": "classic/《最唐的晚餐》_02.jpg",
+      "url": "assets/gallery/classic-001.webp"
+    },
+    {
+      "id": "classic-002",
+      "category": "classic",
+      "title": "丘比蛙唤醒普绪蛙",
+      "lore": "丘比特的金箭换成了奶蛙的圆手，沉睡的普绪蛙被轻轻拍醒——梦醒了，笑也就醒了。",
+      "sourcePath": "classic/丘比蛙唤醒普绪蛙_02.jpg",
+      "url": "assets/gallery/classic-002.webp"
+    },
+    {
+      "id": "classic-003",
+      "category": "classic",
+      "title": "以利蛙在迦密山",
+      "lore": "迦密山巅，烈焰自天而降。奶蛙立于火前，胸口的圣徽映出整座山的黄昏。",
+      "sourcePath": "classic/以利蛙在迦密山.jpg",
+      "url": "assets/gallery/classic-003.webp"
+    },
+    {
+      "id": "classic-004",
+      "category": "classic",
+      "title": "创造奶蛙",
+      "lore": "指尖将触未触，神与奶蛙隔着光对望。宇宙的第一粒快乐，就从这里被点亮。",
+      "sourcePath": "classic/创造奶蛙_02.jpg",
+      "url": "assets/gallery/classic-004.webp"
+    },
+    {
+      "id": "classic-005",
+      "category": "classic",
+      "title": "华盛奶在蒙茅斯",
+      "lore": "蒙茅斯的冬夜，奶蛙乘舟踏雪而来。战旗猎猎，它把出征走成了春游。",
+      "sourcePath": "classic/华盛奶在蒙茅斯_02.jpg",
+      "url": "assets/gallery/classic-005.webp"
+    },
+    {
+      "id": "classic-006",
+      "category": "classic",
+      "title": "召唤奶蛙",
+      "lore": "长桌旁，门徒们屏息围坐。奶蛙应声而来，把晚餐摆成了家宴。圣餐从此改名「奶里奶气」。",
+      "sourcePath": "classic/召唤奶蛙.jpg",
+      "url": "assets/gallery/classic-006.webp"
+    },
+    {
+      "id": "classic-007",
+      "category": "classic",
+      "title": "圣奶蛙归信",
+      "lore": "一束光从天顶倾泻，奶蛙跌进光里。归信的那一刻，连影子都成了暖黄。",
+      "sourcePath": "classic/圣奶蛙归信.jpg",
+      "url": "assets/gallery/classic-007.webp"
+    },
+    {
+      "id": "classic-008",
+      "category": "classic",
+      "title": "圣母怜奶蛙",
+      "lore": "穹顶之下，圣母怀抱着小小的奶蛙圣像。哀伤被重新裱进暖黄的光里——这一次，连怜爱也奶里奶气。",
+      "sourcePath": "classic/圣母怜奶蛙.jpg",
+      "url": "assets/gallery/classic-008.webp"
+    },
+    {
+      "id": "classic-009",
+      "category": "classic",
+      "title": "大天使长的最后审判",
+      "lore": "末日号角吹响，烈焰中的众生换上了同款黄脸。审判长是奶蛙——最后的罪名，只有一条：不够快乐。",
+      "sourcePath": "classic/大天使长的最后审判.jpg",
+      "url": "assets/gallery/classic-009.webp"
+    },
+    {
+      "id": "classic-010",
+      "category": "classic",
+      "title": "天使向奶蛙显现",
+      "lore": "云海圣光之间，天使报来喜讯。奶蛙听完，决定把消息再咀嚼一会儿。福音，就此成立。",
+      "sourcePath": "classic/天使向奶蛙显现.jpg",
+      "url": "assets/gallery/classic-010.webp"
+    },
+    {
+      "id": "classic-011",
+      "category": "classic",
+      "title": "天启四奶蛙",
+      "lore": "雪山荒原上，四骑士策马而来。走近才看清，马背上是四只抱团取暖的奶蛙。末日，被可爱化了。",
+      "sourcePath": "classic/天启四奶蛙.jpg",
+      "url": "assets/gallery/classic-011.webp"
+    },
+    {
+      "id": "classic-012",
+      "category": "classic",
+      "title": "奶撒之死",
+      "lore": "元老院的长桌，最后一刀落下。奶蛙倒在白色长袍里，嘴角还留着笑——凯撒从没想过，死也能死得奶里奶气。",
+      "sourcePath": "classic/奶撒之死.jpg",
+      "url": "assets/gallery/classic-012.webp"
+    },
+    {
+      "id": "classic-013",
+      "category": "classic",
+      "title": "奶破蛙在军校",
+      "lore": "军校课堂，奶破蛙正襟危坐。胸前的勋章黄得发亮，全班的军姿都软了几分。",
+      "sourcePath": "classic/奶破蛙在军校.jpg",
+      "url": "assets/gallery/classic-013.webp"
+    },
+    {
+      "id": "classic-014",
+      "category": "classic",
+      "title": "奶破蛙在战场",
+      "lore": "炮火连天的山坡，奶破蛙勒马而立。硝烟滚滚，它笑着把战场看成了烟火大会。",
+      "sourcePath": "classic/奶破蛙在战场.jpg",
+      "url": "assets/gallery/classic-014.webp"
+    },
+    {
+      "id": "classic-015",
+      "category": "classic",
+      "title": "奶破蛙的加冕典礼",
+      "lore": "宫廷灯火通明，贵族齐聚加冕礼。主角破例把王冠戴歪了一点——庄严，但不耽误快乐。",
+      "sourcePath": "classic/奶破蛙的加冕典礼.jpg",
+      "url": "assets/gallery/classic-015.webp"
+    },
+    {
+      "id": "classic-016",
+      "category": "classic",
+      "title": "奶破蛙的诞生",
+      "lore": "神迹之夜，奶蛙破壳而生。星群俯身围观，第一声啼哭是奶里奶气的。",
+      "sourcePath": "classic/奶破蛙的诞生.jpg",
+      "url": "assets/gallery/classic-016.webp"
+    },
+    {
+      "id": "classic-017",
+      "category": "classic",
+      "title": "奶破蛙翻越阿尔卑斯山",
+      "lore": "翻越阿尔卑斯的奶蛙坐骑昂首嘶鸣。山巅风雪刺骨，它的笑自带春意。",
+      "sourcePath": "classic/奶破蛙翻越阿尔卑斯山.jpg",
+      "url": "assets/gallery/classic-017.webp"
+    },
+    {
+      "id": "classic-018",
+      "category": "classic",
+      "title": "奶蛙之死",
+      "lore": "浴缸里的最后时刻，奶蛙安详闭眼，手中还攥着那封「快乐」的信。殉道，殉的是笑容。",
+      "sourcePath": "classic/奶蛙之死.jpg",
+      "url": "assets/gallery/classic-018.webp"
+    },
+    {
+      "id": "classic-019",
+      "category": "classic",
+      "title": "奶蛙之筏",
+      "lore": "漂流的木筏上，奶蛙在桅顶举起一面黄旗。绝境里的希望，是它圆滚滚的背影。",
+      "sourcePath": "classic/奶蛙之筏.jpg",
+      "url": "assets/gallery/classic-019.webp"
+    },
+    {
+      "id": "classic-020",
+      "category": "classic",
+      "title": "奶蛙变容（纯享版）",
+      "lore": "奶蛙变容（纯享版）——奶蛙主演的古典名画再创作，庄严被一只奶蛙重新加冕。",
+      "sourcePath": "classic/奶蛙变容（纯享版）.jpg",
+      "url": "assets/gallery/classic-020.webp"
+    },
+    {
+      "id": "classic-021",
+      "category": "classic",
+      "title": "奶蛙在塔楼阶梯上的会面",
+      "lore": "螺旋阶梯的转角，奶蛙与访客遥遥相望。台阶被它坐软，相逢被它放慢。",
+      "sourcePath": "classic/奶蛙在塔楼阶梯上的会面.jpg",
+      "url": "assets/gallery/classic-021.webp"
+    },
+    {
+      "id": "classic-022",
+      "category": "classic",
+      "title": "奶蛙复活",
+      "lore": "墓门推开，奶蛙睁开眼。复活的第一个念头：先笑一声，告诉人间不必怕。",
+      "sourcePath": "classic/奶蛙复活.jpg",
+      "url": "assets/gallery/classic-022.webp"
+    },
+    {
+      "id": "classic-023",
+      "category": "classic",
+      "title": "奶蛙夜巡",
+      "lore": "伦勃朗《夜巡》竖屏版——夜色队伍里，奶蛙举枪站得笔直，阴影都被它照暖。",
+      "sourcePath": "classic/奶蛙夜巡_02.jpg",
+      "url": "assets/gallery/classic-023.webp"
+    },
+    {
+      "id": "classic-024",
+      "category": "classic",
+      "title": "奶蛙帝国成立",
+      "lore": "帝国加冕，奶蛙亲手把皇冠戴到自己头上——戴歪了。庄严的史册，从此多了一页歪的快乐。",
+      "sourcePath": "classic/奶蛙帝国成立.jpg",
+      "url": "assets/gallery/classic-024.webp"
+    },
+    {
+      "id": "classic-025",
+      "category": "classic",
+      "title": "奶蛙投降",
+      "lore": "白旗举得最高，奶蛙弯腰投降。认输也要认得体面：笑到露牙，是它唯一的战败宣言。",
+      "sourcePath": "classic/奶蛙投降.jpg",
+      "url": "assets/gallery/classic-025.webp"
+    },
+    {
+      "id": "classic-026",
+      "category": "classic",
+      "title": "奶蛙朝圣",
+      "lore": "朝圣路上，奶蛙背着行囊一步一拜。每一拜都笑着，像在给大地递糖。",
+      "sourcePath": "classic/奶蛙朝圣.jpg",
+      "url": "assets/gallery/classic-026.webp"
+    },
+    {
+      "id": "classic-027",
+      "category": "classic",
+      "title": "奶蛙渡河",
+      "lore": "涉水过河，水只没到奶蛙的肚皮。快乐浮在水面，它踩出一路涟漪。",
+      "sourcePath": "classic/奶蛙渡河.jpg",
+      "url": "assets/gallery/classic-027.webp"
+    },
+    {
+      "id": "classic-028",
+      "category": "classic",
+      "title": "奶蛙的赞歌就是勇气的赞歌",
+      "lore": "奶蛙引吭高歌，声浪卷过整面画布。勇气的赞歌，原来是一首跑调的快乐。",
+      "sourcePath": "classic/奶蛙的赞歌就是勇气的赞歌.jpg",
+      "url": "assets/gallery/classic-028.webp"
+    },
+    {
+      "id": "classic-029",
+      "category": "classic",
+      "title": "奶蛙雷帝杀龙",
+      "lore": "雷帝挥剑斩向恶龙，恶龙看见奶蛙先笑为敬。胜负未分，杀气先被可爱化解。",
+      "sourcePath": "classic/奶蛙雷帝杀龙.jpg",
+      "url": "assets/gallery/classic-029.webp"
+    },
+    {
+      "id": "classic-030",
+      "category": "classic",
+      "title": "奶西分海",
+      "lore": "红海为奶蛙让路，浪墙向两侧退开。海底的鱼群探出头，看它踩着干地，一路笑到对岸。",
+      "sourcePath": "classic/奶西分海.jpg",
+      "url": "assets/gallery/classic-030.webp"
+    },
+    {
+      "id": "classic-031",
+      "category": "classic",
+      "title": "恋人怀中",
+      "lore": "相拥的恋人剪影里，奶蛙依偎怀中。爱情柔软得像奶黄，甜得不肯撒手。",
+      "sourcePath": "classic/恋人怀中.jpg",
+      "url": "assets/gallery/classic-031.webp"
+    },
+    {
+      "id": "classic-032",
+      "category": "classic",
+      "title": "撑阳伞的奶蛙",
+      "lore": "印象派的阳光里，奶蛙撑起阳伞。裙摆是云做的，影子是光画的。",
+      "sourcePath": "classic/撑阳伞的奶蛙_02.jpg",
+      "url": "assets/gallery/classic-032.webp"
+    },
+    {
+      "id": "classic-033",
+      "category": "classic",
+      "title": "树荫下的奶蛙",
+      "lore": "树荫斑驳，奶蛙仰面躺在草地上。光斑落满肚皮，它数着光点，数着数着就笑了。",
+      "sourcePath": "classic/树荫下的奶蛙.jpg",
+      "url": "assets/gallery/classic-033.webp"
+    },
+    {
+      "id": "classic-034",
+      "category": "classic",
+      "title": "游到海水泛白",
+      "lore": "一头扎进海里的奶蛙，游到海水泛白。快乐没有岸，那就一直游下去。",
+      "sourcePath": "classic/游到海水泛白.jpg",
+      "url": "assets/gallery/classic-034.webp"
+    },
+    {
+      "id": "classic-035",
+      "category": "classic",
+      "title": "直到死亡将我们分开",
+      "lore": "婚礼誓言被改写：直到死亡将我们分开——在这之前，先笑完这一场。",
+      "sourcePath": "classic/直到死亡将我们分开_02.jpg",
+      "url": "assets/gallery/classic-035.webp"
+    },
+    {
+      "id": "classic-036",
+      "category": "classic",
+      "title": "自由引导奶蛙",
+      "lore": "自由女神高举旗帜，奶蛙冲在最前引路。人人都是主角，快乐是唯一的纲领。",
+      "sourcePath": "classic/自由引导奶蛙.jpg",
+      "url": "assets/gallery/classic-036.webp"
+    },
+    {
+      "id": "classic-037",
+      "category": "classic",
+      "title": "迎着阳光盛大逃亡",
+      "lore": "迎着光盛大逃亡，奶蛙把背影留给追兵，把笑留给太阳。",
+      "sourcePath": "classic/迎着阳光盛大逃亡.jpg",
+      "url": "assets/gallery/classic-037.webp"
+    },
+    {
+      "id": "classic-038",
+      "category": "classic",
+      "title": "阿齐姆与泽莉卡",
+      "lore": "海边的情侣并肩看潮，浪花替他们说完情话。奶蛙在画框外，负责笑。",
+      "sourcePath": "classic/阿齐姆与泽莉卡.jpg",
+      "url": "assets/gallery/classic-038.webp"
+    },
+    {
+      "id": "4k-039",
+      "category": "4k",
+      "title": "奶蛙-4K-叉腰指点-03",
+      "lore": "奶蛙-4K-叉腰指点-03 —— 奶蛙艺术圣殿馆藏。",
+      "sourcePath": "4k/thumbs/奶蛙-4K-叉腰指点-03.jpg",
+      "url": "assets/gallery/4k-039.webp"
+    },
+    {
+      "id": "4k-040",
+      "category": "4k",
+      "title": "奶蛙-4K-张臂平衡-05",
+      "lore": "奶蛙-4K-张臂平衡-05 —— 奶蛙艺术圣殿馆藏。",
+      "sourcePath": "4k/thumbs/奶蛙-4K-张臂平衡-05.jpg",
+      "url": "assets/gallery/4k-040.webp"
+    },
+    {
+      "id": "4k-041",
+      "category": "4k",
+      "title": "奶蛙-4K-托腮沉思-04",
+      "lore": "奶蛙-4K-托腮沉思-04 —— 奶蛙艺术圣殿馆藏。",
+      "sourcePath": "4k/thumbs/奶蛙-4K-托腮沉思-04.jpg",
+      "url": "assets/gallery/4k-041.webp"
+    },
+    {
+      "id": "4k-042",
+      "category": "4k",
+      "title": "奶蛙-4K-抱头震惊-02",
+      "lore": "奶蛙-4K-抱头震惊-02 —— 奶蛙艺术圣殿馆藏。",
+      "sourcePath": "4k/thumbs/奶蛙-4K-抱头震惊-02.jpg",
+      "url": "assets/gallery/4k-042.webp"
+    },
+    {
+      "id": "4k-043",
+      "category": "4k",
+      "title": "奶蛙-4K-捶头大笑-01",
+      "lore": "奶蛙-4K-捶头大笑-01 —— 奶蛙艺术圣殿馆藏。",
+      "sourcePath": "4k/thumbs/奶蛙-4K-捶头大笑-01.jpg",
+      "url": "assets/gallery/4k-043.webp"
+    },
+    {
+      "id": "laugh-gallery-044",
+      "category": "laugh-gallery",
+      "title": "奶蛙-亮黄站姿",
+      "lore": "标准的亮黄站姿，绿眼圆睁——奶蛙最本真的模样。",
+      "sourcePath": "laugh-gallery/奶蛙-亮黄站姿.png",
+      "url": "assets/gallery/laugh-gallery-044.webp"
+    },
+    {
+      "id": "laugh-gallery-045",
+      "category": "laugh-gallery",
+      "title": "奶蛙-叉腰指点",
+      "lore": "叉腰指点，笑里带三分指点江山的豪气。",
+      "sourcePath": "laugh-gallery/奶蛙-叉腰指点.png",
+      "url": "assets/gallery/laugh-gallery-045.webp"
+    },
+    {
+      "id": "laugh-gallery-046",
+      "category": "laugh-gallery",
+      "title": "奶蛙-双V大笑",
+      "lore": "双手比出双 V，大笑的胜利者姿态。",
+      "sourcePath": "laugh-gallery/奶蛙-双V大笑.png",
+      "url": "assets/gallery/laugh-gallery-046.webp"
+    },
+    {
+      "id": "laugh-gallery-047",
+      "category": "laugh-gallery",
+      "title": "奶蛙-哪吒",
+      "lore": "哪吒发髻、火焰纹、红马甲，神话里的奶蛙合掌大笑。",
+      "sourcePath": "laugh-gallery/奶蛙-哪吒.png",
+      "url": "assets/gallery/laugh-gallery-047.webp"
+    },
+    {
+      "id": "laugh-gallery-048",
+      "category": "laugh-gallery",
+      "title": "奶蛙-四肢着地",
+      "lore": "四肢着地大笑成一座雕塑，快乐就地生根。",
+      "sourcePath": "laugh-gallery/奶蛙-四肢着地.png",
+      "url": "assets/gallery/laugh-gallery-048.webp"
+    },
+    {
+      "id": "laugh-gallery-049",
+      "category": "laugh-gallery",
+      "title": "奶蛙-圣诞老人",
+      "lore": "圣诞老人装束，双手交叠，节日的快乐提前送达。",
+      "sourcePath": "laugh-gallery/奶蛙-圣诞老人.png",
+      "url": "assets/gallery/laugh-gallery-049.webp"
+    },
+    {
+      "id": "laugh-gallery-050",
+      "category": "laugh-gallery",
+      "title": "奶蛙-弯腰大笑",
+      "lore": "躬着身子笑到直不起来，快乐重到需要弯腰托住。",
+      "sourcePath": "laugh-gallery/奶蛙-弯腰大笑.png",
+      "url": "assets/gallery/laugh-gallery-050.webp"
+    },
+    {
+      "id": "laugh-gallery-051",
+      "category": "laugh-gallery",
+      "title": "奶蛙-彩虹渐变",
+      "lore": "彩虹渐变潮玩款，七彩叠在黄皮肤上。",
+      "sourcePath": "laugh-gallery/奶蛙-彩虹渐变.png",
+      "url": "assets/gallery/laugh-gallery-051.webp"
+    },
+    {
+      "id": "laugh-gallery-052",
+      "category": "laugh-gallery",
+      "title": "奶蛙-抱头大笑",
+      "lore": "双手抱头大笑，笑意从头顶炸开。",
+      "sourcePath": "laugh-gallery/奶蛙-抱头大笑.png",
+      "url": "assets/gallery/laugh-gallery-052.webp"
+    },
+    {
+      "id": "laugh-gallery-053",
+      "category": "laugh-gallery",
+      "title": "奶蛙-抱婴大笑",
+      "lore": "怀里抱着小奶蛙一起大笑，快乐会传染。",
+      "sourcePath": "laugh-gallery/奶蛙-抱婴大笑.png",
+      "url": "assets/gallery/laugh-gallery-053.webp"
+    },
+    {
+      "id": "laugh-gallery-054",
+      "category": "laugh-gallery",
+      "title": "奶蛙-指你大笑",
+      "lore": "伸出手指指向你，笑你，也笑自己。",
+      "sourcePath": "laugh-gallery/奶蛙-指你大笑.png",
+      "url": "assets/gallery/laugh-gallery-054.webp"
+    },
+    {
+      "id": "laugh-gallery-055",
+      "category": "laugh-gallery",
+      "title": "奶蛙-橙肤捧腹",
+      "lore": "橙色变体捧腹大笑，暖色调的快乐加倍。",
+      "sourcePath": "laugh-gallery/奶蛙-橙肤捧腹.png",
+      "url": "assets/gallery/laugh-gallery-055.webp"
+    },
+    {
+      "id": "laugh-gallery-056",
+      "category": "laugh-gallery",
+      "title": "奶蛙-狐面和服",
+      "lore": "狐狸面具配和服头纱，东瀛风的奶蛙也笑得端庄。",
+      "sourcePath": "laugh-gallery/奶蛙-狐面和服.png",
+      "url": "assets/gallery/laugh-gallery-056.webp"
+    },
+    {
+      "id": "laugh-gallery-057",
+      "category": "laugh-gallery",
+      "title": "奶蛙-白肤捧腹",
+      "lore": "白色变体捧腹大笑，奶蛙的另一副面孔。",
+      "sourcePath": "laugh-gallery/奶蛙-白肤捧腹.png",
+      "url": "assets/gallery/laugh-gallery-057.webp"
+    },
+    {
+      "id": "laugh-gallery-058",
+      "category": "laugh-gallery",
+      "title": "奶蛙-眯眼张嘴",
+      "lore": "眯眼张嘴，笑成一弯快乐的月牙。",
+      "sourcePath": "laugh-gallery/奶蛙-眯眼张嘴.png",
+      "url": "assets/gallery/laugh-gallery-058.webp"
+    },
+    {
+      "id": "laugh-gallery-059",
+      "category": "laugh-gallery",
+      "title": "奶蛙-粉肤捧腹",
+      "lore": "粉色变体捧腹大笑，换个肤色，快乐不打折。",
+      "sourcePath": "laugh-gallery/奶蛙-粉肤捧腹.png",
+      "url": "assets/gallery/laugh-gallery-059.webp"
+    },
+    {
+      "id": "laugh-gallery-060",
+      "category": "laugh-gallery",
+      "title": "奶蛙-银河隐藏款",
+      "lore": "星空文案的隐藏款，每 3.1415926 光年才出现一次。",
+      "sourcePath": "laugh-gallery/奶蛙-银河隐藏款.png",
+      "url": "assets/gallery/laugh-gallery-060.webp"
+    },
+    {
+      "id": "laugh-gallery-061",
+      "category": "laugh-gallery",
+      "title": "奶蛙-雀跃",
+      "lore": "双臂张开单脚跃起，快乐到飞起来。",
+      "sourcePath": "laugh-gallery/奶蛙-雀跃.png",
+      "url": "assets/gallery/laugh-gallery-061.webp"
+    },
+    {
+      "id": "laugh-gallery-062",
+      "category": "laugh-gallery",
+      "title": "奶蛙-静站绿眼",
+      "lore": "安安静静站着，绿眼平静，笑藏在肚子里。",
+      "sourcePath": "laugh-gallery/奶蛙-静站绿眼.png",
+      "url": "assets/gallery/laugh-gallery-062.webp"
+    },
+    {
+      "id": "emotes-063",
+      "category": "emotes",
+      "title": "奶蛙-侧立",
+      "lore": "侧身而立，双手放在肚前，安静又圆润。",
+      "sourcePath": "emotes/奶蛙-侧立.png",
+      "url": "assets/gallery/emotes-063.webp"
+    },
+    {
+      "id": "emotes-064",
+      "category": "emotes",
+      "title": "奶蛙-双V吐舌",
+      "lore": "双 V 手势配吐舌，活泼到没边。",
+      "sourcePath": "emotes/奶蛙-双V吐舌.png",
+      "url": "assets/gallery/emotes-064.webp"
+    },
+    {
+      "id": "emotes-065",
+      "category": "emotes",
+      "title": "奶蛙-吐舌比心",
+      "lore": "歪头吐舌，双手比心——奶蛙的专属告白。",
+      "sourcePath": "emotes/奶蛙-吐舌比心.png",
+      "url": "assets/gallery/emotes-065.webp"
+    },
+    {
+      "id": "emotes-066",
+      "category": "emotes",
+      "title": "奶蛙-微愠",
+      "lore": "脸颊泛红，眉头微蹙，生气的奶蛙也可爱。",
+      "sourcePath": "emotes/奶蛙-微愠.png",
+      "url": "assets/gallery/emotes-066.webp"
+    },
+    {
+      "id": "emotes-067",
+      "category": "emotes",
+      "title": "奶蛙-托腮",
+      "lore": "单手托腮，微笑地看着世界。",
+      "sourcePath": "emotes/奶蛙-托腮.png",
+      "url": "assets/gallery/emotes-067.webp"
+    },
+    {
+      "id": "emotes-068",
+      "category": "emotes",
+      "title": "奶蛙-气鼓鼓",
+      "lore": "抿嘴皱眉，气鼓鼓的奶蛙。",
+      "sourcePath": "emotes/奶蛙-气鼓鼓.png",
+      "url": "assets/gallery/emotes-068.webp"
+    },
+    {
+      "id": "emotes-069",
+      "category": "emotes",
+      "title": "奶蛙-点鼻",
+      "lore": "手指点着鼻尖，俏皮小动作。",
+      "sourcePath": "emotes/奶蛙-点鼻.png",
+      "url": "assets/gallery/emotes-069.webp"
+    },
+    {
+      "id": "emotes-070",
+      "category": "emotes",
+      "title": "奶蛙-疑惑",
+      "lore": "歪头皱眉，头顶冒出一个大问号。",
+      "sourcePath": "emotes/奶蛙-疑惑.png",
+      "url": "assets/gallery/emotes-070.webp"
+    },
+    {
+      "id": "emotes-071",
+      "category": "emotes",
+      "title": "奶蛙-红晕托颌",
+      "lore": "手托下巴，脸颊泛红，害羞的模样。",
+      "sourcePath": "emotes/奶蛙-红晕托颌.png",
+      "url": "assets/gallery/emotes-071.webp"
+    },
+    {
+      "id": "emotes-072",
+      "category": "emotes",
+      "title": "奶蛙-表情-13",
+      "lore": "奶蛙-表情-13：奶蛙表情素材，馆藏表情系列之一，用于日常斗图与情绪表达。",
+      "sourcePath": "emotes/奶蛙-表情-13.png",
+      "url": "assets/gallery/emotes-072.webp"
+    },
+    {
+      "id": "emotes-073",
+      "category": "emotes",
+      "title": "奶蛙-蹲坐托腮",
+      "lore": "蹲坐在地，双手托腮，温顺等夸奖。",
+      "sourcePath": "emotes/奶蛙-蹲坐托腮.png",
+      "url": "assets/gallery/emotes-073.webp"
+    },
+    {
+      "id": "emotes-074",
+      "category": "emotes",
+      "title": "奶蛙-露齿大笑",
+      "lore": "矮胖身材，张嘴露齿，笑得很用力。",
+      "sourcePath": "emotes/奶蛙-露齿大笑.png",
+      "url": "assets/gallery/emotes-074.webp"
+    }
+  ]
+}
