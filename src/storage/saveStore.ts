@@ -20,6 +20,7 @@ export function createDefaultSave(): SaveData {
     unlockedCharacters: ['char-classic'],
     unlockedCodexIds: [],
     clearedStages: [],
+    clearedHardStages: [],
     bestKills: 0,
     bestSurvivalSec: 0,
     totalRuns: 0,
@@ -49,6 +50,9 @@ export function loadSaveData(storage?: Pick<Storage, 'getItem'>): SaveData {
         : [],
       clearedStages: Array.isArray(parsed.clearedStages)
         ? Array.from(new Set(parsed.clearedStages))
+        : [],
+      clearedHardStages: Array.isArray(parsed.clearedHardStages)
+        ? Array.from(new Set(parsed.clearedHardStages))
         : [],
       bestKills: typeof parsed.bestKills === 'number' ? parsed.bestKills : 0,
       bestSurvivalSec: typeof parsed.bestSurvivalSec === 'number' ? parsed.bestSurvivalSec : 0,

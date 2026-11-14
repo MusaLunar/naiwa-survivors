@@ -116,6 +116,19 @@ export class SoundEngine {
           this.playTone(392, 987.77, 0.26, 'triangle', 0.16);
           setTimeout(() => this.playTone(659.25, 1318.5, 0.2, 'sine', 0.11), 55);
           break;
+        case 'gadget_pickup':
+          this.playTone(523.25, 783.99, 0.14, 'sine', 0.12);
+          break;
+        case 'gadget_use':
+          this.playTone(330, 880, 0.22, 'triangle', 0.15);
+          break;
+        case 'shield_block':
+          this.playTone(659.25, 440, 0.16, 'triangle', 0.15);
+          break;
+        case 'boss_merge':
+          this.playTone(146.83, 293.66, 0.55, 'sawtooth', 0.16);
+          setTimeout(() => this.playTone(220, 440, 0.4, 'triangle', 0.14), 120);
+          break;
         case 'pickup_chest':
           this.playTone(523.25, 1046.5, 0.35, 'triangle', 0.16);
           break;

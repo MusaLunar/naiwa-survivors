@@ -218,6 +218,52 @@ export class SanctuaryRenderer {
           this.drawSpriteFitted(crest, 0, 0, z.radius * 1.65, false, false);
         }
         ctx.restore();
+      } else if (z.kind === 'enemy_blast') {
+        const progress = Math.max(0, Math.min(1, 1 - z.life / Math.max(0.01, z.maxLife)));
+        ctx.save();
+        ctx.strokeStyle = z.color;
+        ctx.fillStyle = 'rgba(251, 146, 60, 0.16)';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(z.x, z.y, z.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.36)';
+        ctx.beginPath();
+        ctx.arc(z.x, z.y, z.radius * progress, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      } else if (z.kind === 'blackhole') {
+        const fade = Math.min(1, z.life * 1.6);
+        ctx.save();
+        ctx.globalAlpha = fade;
+        const grad = ctx.createRadialGradient(z.x, z.y, 12, z.x, z.y, z.radius);
+        grad.addColorStop(0, 'rgba(15, 7, 32, 0.92)');
+        grad.addColorStop(0.28, 'rgba(126, 34, 206, 0.42)');
+        grad.addColorStop(0.68, 'rgba(168, 85, 247, 0.14)');
+        grad.addColorStop(1, 'rgba(168, 85, 247, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(z.x, z.y, z.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#c084fc';
+        ctx.lineWidth = 2.2;
+        for (let arm = 0; arm < 3; arm++) {
+          const base = state.elapsedSec * 3.4 + (Math.PI * 2 * arm) / 3;
+          ctx.beginPath();
+          ctx.arc(z.x, z.y, 44 + arm * 32, base, base + Math.PI * 1.15);
+          ctx.stroke();
+        }
+        ctx.fillStyle = '#090414';
+        ctx.strokeStyle = '#e9d5ff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(z.x, z.y, 26, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
       }
     }
 
@@ -360,6 +406,41 @@ export class SanctuaryRenderer {
           ctx.fillRect(p.x - 10, py, 4, 6);
           ctx.fillRect(p.x + 6, py, 4, 6);
         }
+      } else if (
+        p.kind === 'gadget_magnet' ||
+        p.kind === 'gadget_shield' ||
+        p.kind === 'gadget_decoy' ||
+        p.kind === 'gadget_turret'
+      ) {
+        const gadgetId =
+          p.kind === 'gadget_magnet'
+            ? 'gadget-magnet'
+            : p.kind === 'gadget_shield'
+              ? 'gadget-shield'
+              : p.kind === 'gadget_decoy'
+                ? 'gadget-decoy'
+                : 'gadget-turret';
+        const gDef = catalog.gadgets[gadgetId];
+        const gSpr = gDef ? this.assets.getSprite(gDef.spriteId) : undefined;
+        ctx.save();
+        ctx.fillStyle = `${gDef?.color ?? '#60a5fa'}33`;
+        ctx.strokeStyle = gDef?.accentColor ?? '#ffffff';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(p.x, py, 19, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeStyle = gDef?.color ?? '#60a5fa';
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.arc(p.x, py, 24 + Math.sin(state.elapsedSec * 5) * 2, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        if (gSpr) {
+          this.drawSpriteFitted(gSpr, p.x, py, 30, false, false);
+        }
+        ctx.restore();
       } else {
         // XP Gem sprite with tier-colored aura (blue/emerald/amber)
         const color =
@@ -393,6 +474,38 @@ export class SanctuaryRenderer {
       }
     }
 
+    // 2.5 Tactical Deployables (Decoy & Auto-Turret)
+    for (const d of state.deployables) {
+      ctx.save();
+      if (d.kind === 'decoy') {
+        ctx.strokeStyle = 'rgba(244, 114, 182, 0.32)';
+        ctx.setLineDash([7, 6]);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, 120 + Math.sin(state.elapsedSec * 6) * 8, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      ctx.fillStyle = `${d.color}2e`;
+      ctx.strokeStyle = d.color;
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.radius + 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      const spr = this.assets.getSprite(d.spriteId);
+      if (spr) {
+        this.drawSpriteFitted(spr, d.x, d.y, 44, false, false);
+      }
+      const timerW = 36;
+      const frac = Math.max(0, d.life / Math.max(0.1, d.maxLife));
+      ctx.fillStyle = 'rgba(0,0,0,0.68)';
+      ctx.fillRect(d.x - timerW / 2, d.y + 26, timerW, 5);
+      ctx.fillStyle = d.color;
+      ctx.fillRect(d.x - timerW / 2 + 1, d.y + 27, (timerW - 2) * frac, 3);
+      ctx.restore();
+    }
+
     // 3. Enemies & Bosses
     for (const e of state.enemies) {
       if (
@@ -406,6 +519,24 @@ export class SanctuaryRenderer {
 
       const wobble = Math.sin(state.elapsedSec * 9 + e.wobbleSeed) * 0.06;
       const targetH = e.radius * (e.isMedallion ? 2.15 : 2.55);
+
+      // Charger telegraph beam & pulse
+      if (e.aiState === 'windup') {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.78)';
+        ctx.setLineDash([8, 6]);
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(e.x, e.y);
+        ctx.lineTo(e.x + e.chargeDirX * 260, e.y + e.chargeDirY * 260);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.28)';
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.radius * 1.25, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
 
       // Ground shadow
       ctx.fillStyle = 'rgba(0, 0, 0, 0.42)';
@@ -426,11 +557,11 @@ export class SanctuaryRenderer {
         ctx.restore();
       }
 
-      // Elite / Boss warning ring
+      // Elite / Boss warning ring & merged boss aura
       if (e.isBoss || e.isElite) {
         ctx.save();
-        ctx.strokeStyle = e.isBoss ? '#ff3b30' : '#f4c542';
-        ctx.lineWidth = e.isBoss ? 3.5 : 2.2;
+        ctx.strokeStyle = e.isMerged ? '#fde047' : e.isBoss ? '#ff3b30' : '#f4c542';
+        ctx.lineWidth = e.isMerged ? 4.5 : e.isBoss ? 3.5 : 2.2;
         ctx.beginPath();
         ctx.ellipse(
           e.x,
@@ -442,6 +573,13 @@ export class SanctuaryRenderer {
           Math.PI * 2
         );
         ctx.stroke();
+        if (e.isMerged) {
+          ctx.strokeStyle = 'rgba(251, 146, 60, 0.55)';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, e.radius * 1.25 + Math.sin(state.elapsedSec * 7) * 4, 0, Math.PI * 2);
+          ctx.stroke();
+        }
         ctx.restore();
       }
 
@@ -494,6 +632,33 @@ export class SanctuaryRenderer {
       ctx.beginPath();
       ctx.arc(px, py, auraR, 0, Math.PI * 2);
       ctx.stroke();
+    }
+    if (state.player.activeMagnetTimer > 0) {
+      ctx.strokeStyle = '#60a5fa';
+      ctx.setLineDash([8, 6]);
+      ctx.lineWidth = 2.5;
+      ctx.globalAlpha = 0.82;
+      ctx.beginPath();
+      ctx.arc(px, py, 46 + Math.sin(state.elapsedSec * 9) * 4, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    if (state.player.shieldCharges > 0 && state.player.shieldTimer > 0) {
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.16)';
+      ctx.strokeStyle = '#fde047';
+      ctx.lineWidth = 3;
+      ctx.globalAlpha = 0.92;
+      ctx.beginPath();
+      ctx.arc(px, py, 39, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      for (let s = 0; s < state.player.shieldCharges; s++) {
+        const a = state.elapsedSec * 3.5 + (Math.PI * 2 * s) / state.player.shieldCharges;
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath();
+        ctx.arc(px + Math.cos(a) * 39, py + Math.sin(a) * 39, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
     ctx.restore();
 

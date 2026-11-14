@@ -1,8 +1,50 @@
-import type { CharacterDef, StageDef } from '../data/types.ts';
+import type {
+  CharacterDef,
+  EnemyBehavior,
+  GadgetId,
+  GameDifficulty,
+  StageDef,
+} from '../data/types.ts';
 import { SeededRng } from './rng.ts';
 import { SpatialHash } from './spatialHash.ts';
 
 export type GamePhase = 'playing' | 'levelup' | 'chest' | 'paused' | 'victory' | 'gameover';
+
+export interface DifficultyProfile {
+  hpMult: number;
+  speedMult: number;
+  damageMult: number;
+  spawnRateMult: number;
+  capMult: number;
+  bossCooldownMult: number;
+  goldMult: number;
+  label: string;
+}
+
+export function getDifficultyProfile(difficulty: GameDifficulty): DifficultyProfile {
+  if (difficulty === 'hard') {
+    return {
+      hpMult: 1.78,
+      speedMult: 1.24,
+      damageMult: 1.65,
+      spawnRateMult: 1.55,
+      capMult: 1.48,
+      bossCooldownMult: 0.72,
+      goldMult: 1.6,
+      label: '炼狱高难',
+    };
+  }
+  return {
+    hpMult: 1,
+    speedMult: 1,
+    damageMult: 1,
+    spawnRateMult: 1,
+    capMult: 1,
+    bossCooldownMult: 1,
+    goldMult: 1,
+    label: '标准模式',
+  };
+}
 
 export interface WeaponSlot {
   weaponId: string;
@@ -46,6 +88,10 @@ export interface PlayerState {
   skillMaxCooldown: number;
   skillBuffTimer: number;
   frenzyTimer: number;
+  heldGadgets: GadgetId[];
+  activeMagnetTimer: number;
+  shieldCharges: number;
+  shieldTimer: number;
 }
 
 export interface EnemyEntity {
@@ -53,6 +99,13 @@ export interface EnemyEntity {
   defId: string;
   spriteId: string;
   isMedallion: boolean;
+  aiBehavior: EnemyBehavior;
+  aiTimer: number;
+  aiState: 'move' | 'windup' | 'dash' | 'channel';
+  chargeDirX: number;
+  chargeDirY: number;
+  isMerged: boolean;
+  scaleMult: number;
   x: number;
   y: number;
   vx: number;
@@ -100,7 +153,7 @@ export interface ProjectileEntity {
 export interface ZoneEffect {
   uid: number;
   weaponId: string;
-  kind: 'aura' | 'beam' | 'lightning' | 'zone';
+  kind: 'aura' | 'beam' | 'lightning' | 'zone' | 'enemy_blast' | 'blackhole';
   x: number;
   y: number;
   x2?: number;
@@ -118,6 +171,19 @@ export interface ZoneEffect {
   applied?: boolean;
 }
 
+export interface TacticalDeployable {
+  uid: number;
+  kind: 'decoy' | 'turret';
+  x: number;
+  y: number;
+  radius: number;
+  life: number;
+  maxLife: number;
+  actionTimer: number;
+  spriteId: string;
+  color: string;
+}
+
 export interface PickupEntity {
   uid: number;
   kind:
@@ -131,6 +197,10 @@ export interface PickupEntity {
     | 'frenzy_elixir'
     | 'ice_hourglass'
     | 'holy_bell'
+    | 'gadget_magnet'
+    | 'gadget_shield'
+    | 'gadget_decoy'
+    | 'gadget_turret'
     | 'chest';
   x: number;
   y: number;
@@ -195,6 +265,10 @@ export interface SimEvent {
     | 'pickup_gold'
     | 'pickup_chest'
     | 'pickup_buff'
+    | 'gadget_pickup'
+    | 'gadget_use'
+    | 'shield_block'
+    | 'boss_merge'
     | 'bomb_blast'
     | 'skill_cast'
     | 'levelup'
@@ -210,12 +284,14 @@ export interface GameState {
   phase: GamePhase;
   stageId: string;
   characterId: string;
+  difficulty: GameDifficulty;
   elapsedSec: number;
   endlessMode: boolean;
   kills: number;
   goldEarned: number;
   pendingLevelUps: number;
   spawnAccumulator: number;
+  gadgetSpawnTimer: number;
   nextUid: number;
   shakeTimer: number;
   shakeIntensity: number;
@@ -226,6 +302,7 @@ export interface GameState {
   enemies: EnemyEntity[];
   projectiles: ProjectileEntity[];
   zones: ZoneEffect[];
+  deployables: TacticalDeployable[];
   pickups: PickupEntity[];
   floatingTexts: FloatingText[];
   particles: Particle[];
@@ -252,19 +329,23 @@ export function createInitialGameState(
   character: CharacterDef,
   stage: StageDef,
   metaBonuses: Partial<Record<string, number>> = {},
-  seed = Date.now()
+  seed = Date.now(),
+  difficulty: GameDifficulty = 'normal'
 ): GameState {
+  const diff = getDifficultyProfile(difficulty);
   const maxHp = Math.round(character.stats.maxHp + (metaBonuses.maxHp ?? 0));
   const state: GameState = {
     phase: 'playing',
     stageId: stage.id,
     characterId: character.id,
+    difficulty,
     elapsedSec: 0,
     endlessMode: false,
     kills: 0,
     goldEarned: 0,
     pendingLevelUps: 0,
     spawnAccumulator: 0,
+    gadgetSpawnTimer: 16,
     nextUid: 1,
     shakeTimer: 0,
     shakeIntensity: 0,
@@ -292,13 +373,17 @@ export function createInitialGameState(
       amountBonus: character.stats.amount + Math.floor(metaBonuses.amount ?? 0),
       duration: 1 + (metaBonuses.duration ?? 0),
       magnetRadius: 96 * (character.stats.magnet + (metaBonuses.magnet ?? 0)),
-      greed: character.stats.greed + (metaBonuses.greed ?? 0),
+      greed: (character.stats.greed + (metaBonuses.greed ?? 0)) * diff.goldMult,
       regen: character.stats.regen + (metaBonuses.regen ?? 0),
       walkPhase: 0,
       skillCooldownTimer: 0,
       skillMaxCooldown: character.activeSkill.cooldownSec,
       skillBuffTimer: 0,
       frenzyTimer: 0,
+      heldGadgets: [],
+      activeMagnetTimer: 0,
+      shieldCharges: 0,
+      shieldTimer: 0,
     },
     weapons: [
       {
@@ -312,6 +397,7 @@ export function createInitialGameState(
     enemies: [],
     projectiles: [],
     zones: [],
+    deployables: [],
     pickups: [],
     floatingTexts: [],
     particles: [],

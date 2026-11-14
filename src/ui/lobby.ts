@@ -1,5 +1,5 @@
 import { CATALOG, MANIFEST } from '../data/catalog.ts';
-import type { SaveData } from '../data/types.ts';
+import type { GameDifficulty, SaveData } from '../data/types.ts';
 import type { AssetStore } from '../engine/assetLoader.ts';
 import {
   getMetaUpgradeCost,
@@ -10,6 +10,7 @@ import {
 export interface LobbySelection {
   characterId: string;
   stageId: string;
+  difficulty: GameDifficulty;
 }
 
 export class LobbyView {
@@ -17,6 +18,7 @@ export class LobbyView {
   private readonly assets: AssetStore;
   private selectedCharId = 'char-classic';
   private selectedStageId = 'stage-sanctuary';
+  private selectedDifficulty: GameDifficulty = 'normal';
   private activePanel: 'characters' | 'stages' | 'shop' = 'characters';
 
   constructor(root: HTMLElement, assets: AssetStore) {
@@ -87,7 +89,28 @@ export class LobbyView {
               <span>出战展厅</span>
               <strong>${selectedStage.name}</strong>
             </div>
-            <button id="start-run-btn" type="button" class="btn-primary">踏入圣殿开始生存</button>
+            <div class="summary-difficulty-box">
+              <div class="summary-row">
+                <span>挑战难度</span>
+                <strong>${this.selectedDifficulty === 'hard' ? '炼狱高难 (+60% 功德)' : '标准模式'}</strong>
+              </div>
+              <div class="difficulty-toggle-group" role="group" aria-label="选择游戏难度">
+                <button type="button" data-difficulty="normal" class="diff-btn ${this.selectedDifficulty === 'normal' ? 'is-active' : ''}">
+                  标准模式
+                </button>
+                <button type="button" data-difficulty="hard" class="diff-btn is-hard ${this.selectedDifficulty === 'hard' ? 'is-active' : ''}">
+                  炼狱高难 🔥
+                </button>
+              </div>
+              ${
+                this.selectedDifficulty === 'hard'
+                  ? '<p class="diff-warning">高难修正：敌生命 +78% · 伤害 +65% · 移速 +24% · 刷怪 +55% · Boss 技能冷却加速</p>'
+                  : ''
+              }
+            </div>
+            <button id="start-run-btn" type="button" class="btn-primary">
+              ${this.selectedDifficulty === 'hard' ? '挑战炼狱高难 · 进入圣殿' : '踏入圣殿开始生存'}
+            </button>
           </div>
         </aside>
       </main>
@@ -104,10 +127,17 @@ export class LobbyView {
         this.render(save, handlers);
       });
     });
+    this.root.querySelectorAll<HTMLButtonElement>('[data-difficulty]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        this.selectedDifficulty = btn.dataset.difficulty === 'hard' ? 'hard' : 'normal';
+        this.render(save, handlers);
+      });
+    });
     this.root.querySelector('#start-run-btn')?.addEventListener('click', () => {
       handlers.onStartRun({
         characterId: this.selectedCharId,
         stageId: this.selectedStageId,
+        difficulty: this.selectedDifficulty,
       });
     });
 
@@ -186,6 +216,7 @@ export class LobbyView {
     for (const st of Object.values(CATALOG.stages)) {
       const selected = this.selectedStageId === st.id;
       const cleared = save.clearedStages.includes(st.id);
+      const clearedHard = (save.clearedHardStages ?? []).includes(st.id);
       const card = document.createElement('article');
       card.className = `stage-card ${selected ? 'is-selected' : ''}`;
       card.innerHTML = `
@@ -193,7 +224,10 @@ export class LobbyView {
         <div class="stage-body">
           <div class="stage-head">
             <h3>${st.name}</h3>
-            ${cleared ? '<span class="cleared-badge">已加冕</span>' : ''}
+            <div class="stage-badges">
+              ${cleared ? '<span class="cleared-badge">已加冕</span>' : ''}
+              ${clearedHard ? '<span class="cleared-hard-badge">炼狱制霸</span>' : ''}
+            </div>
           </div>
           <p class="card-sub">${st.subtitle}</p>
           <p>${st.description}</p>

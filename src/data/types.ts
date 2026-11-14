@@ -9,6 +9,36 @@ export type WeaponBehavior =
   | 'zone'
   | 'lobbed';
 
+export type GameDifficulty = 'normal' | 'hard';
+
+export type EnemyBehavior =
+  | 'chaser'
+  | 'ranged'
+  | 'charger'
+  | 'skirmisher'
+  | 'splitter'
+  | 'bomber'
+  | 'boss_alps_charge'
+  | 'boss_twin_merge'
+  | 'boss_blink'
+  | 'boss_blackhole'
+  | 'boss_archangel';
+
+export type GadgetId =
+  | 'gadget-magnet'
+  | 'gadget-shield'
+  | 'gadget-decoy'
+  | 'gadget-turret';
+
+export interface GadgetDef {
+  id: GadgetId;
+  name: string;
+  spriteId: string;
+  description: string;
+  color: string;
+  accentColor: string;
+}
+
 export type ActiveSkillId =
   | 'skill-roar-nova'
   | 'skill-blazing-dash'
@@ -110,6 +140,7 @@ export interface EnemyDef {
   name: string;
   spriteId: string;
   isMedallion?: boolean;
+  aiBehavior?: EnemyBehavior;
   lore: string;
   baseHp: number;
   speed: number;
@@ -197,6 +228,7 @@ export interface SaveData {
   unlockedCharacters: string[];
   unlockedCodexIds: string[];
   clearedStages: string[];
+  clearedHardStages?: string[];
   bestKills: number;
   bestSurvivalSec: number;
   totalRuns: number;
@@ -211,5 +243,6 @@ export interface GameCatalog {
   enemies: Record<string, EnemyDef>;
   stages: Record<string, StageDef>;
   metaUpgrades: MetaUpgradeDef[];
+  gadgets: Record<GadgetId, GadgetDef>;
 }
 

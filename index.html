@@ -33,7 +33,10 @@
             <div id="hud-passive-slots" class="slot-strip" aria-label="已装备圣物"></div>
           </div>
 
-          <div class="hud-timer" id="hud-timer">00:00</div>
+          <div class="hud-timer-wrap">
+            <div class="hud-timer" id="hud-timer">00:00</div>
+            <span id="hud-diff-badge" class="hud-diff-badge" hidden>炼狱高难</span>
+          </div>
 
           <div class="hud-right-stats">
             <span class="hud-stat">击退 <strong id="hud-kills">0</strong></span>
@@ -50,6 +53,14 @@
           <p id="boss-banner-sub"></p>
         </div>
       </div>
+
+      <button id="touch-gadget-btn" class="touch-gadget-btn is-empty" type="button" aria-label="使用拾取道具" disabled>
+        <img id="touch-gadget-img" src="" alt="" hidden />
+        <span id="touch-gadget-empty" class="gadget-empty-icon">✦</span>
+        <span id="touch-gadget-count" class="gadget-count-badge" hidden>1</span>
+        <span id="touch-gadget-name" class="gadget-btn-name">道具 (空)</span>
+        <span class="gadget-btn-key">Q / F</span>
+      </button>
 
       <button id="touch-skill-btn" class="touch-skill-btn is-ready" type="button" aria-label="释放主动技能">
         <span class="skill-btn-ring" aria-hidden="true"></span>

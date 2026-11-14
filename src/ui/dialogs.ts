@@ -234,6 +234,7 @@ export function renderResultDialog(
       .join('');
     statsEl.innerHTML = `
       <div class="result-kpis">
+        <div><span>挑战模式</span><strong>${state.difficulty === 'hard' ? '炼狱高难' : '标准模式'}</strong></div>
         <div><span>存活时间</span><strong>${mins}:${secs}</strong></div>
         <div><span>击退奶蛙</span><strong>${state.kills}</strong></div>
         <div><span>达成等级</span><strong>Lv.${state.player.level}</strong></div>

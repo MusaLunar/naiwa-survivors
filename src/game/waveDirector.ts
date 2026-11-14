@@ -1,5 +1,5 @@
 import type { EnemyDef, GameCatalog, StageDef, WavePhase } from '../data/types.ts';
-import type { EnemyEntity, GameState } from './state.ts';
+import { getDifficultyProfile, type EnemyEntity, type GameState } from './state.ts';
 
 export function getActiveWavePhase(stage: StageDef, elapsedSec: number): WavePhase {
   for (let i = 0; i < stage.waves.length; i++) {
@@ -19,21 +19,29 @@ export function spawnEnemyInstance(
   hpScale: number,
   speedScale: number
 ): EnemyEntity {
-  const maxHp = Math.max(1, Math.round(def.baseHp * hpScale));
+  const diff = getDifficultyProfile(state.difficulty);
+  const maxHp = Math.max(1, Math.round(def.baseHp * hpScale * diff.hpMult));
   const entity: EnemyEntity = {
     uid: state.nextUid++,
     defId: def.id,
     spriteId: def.spriteId,
     isMedallion: Boolean(def.isMedallion),
+    aiBehavior: def.aiBehavior ?? 'chaser',
+    aiTimer: def.isBoss ? 2.2 * diff.bossCooldownMult : state.rng.range(1.1, 2.3),
+    aiState: 'move',
+    chargeDirX: 0,
+    chargeDirY: 0,
+    isMerged: false,
+    scaleMult: 1,
     x,
     y,
     vx: 0,
     vy: 0,
     hp: maxHp,
     maxHp,
-    speed: def.speed * speedScale,
+    speed: def.speed * speedScale * diff.speedMult,
     radius: def.radius,
-    damage: def.damage,
+    damage: Math.max(1, Math.round(def.damage * diff.damageMult)),
     xpValue: def.xpValue,
     goldChance: def.goldChance,
     isElite: Boolean(def.isElite),
@@ -41,7 +49,7 @@ export function spawnEnemyInstance(
     hitFlashTimer: 0,
     knockbackVx: 0,
     knockbackVy: 0,
-    bossShootTimer: def.isBoss ? 2.4 : 0,
+    bossShootTimer: def.isBoss ? 2.1 * diff.bossCooldownMult : 0,
     wobbleSeed: state.rng.range(0, Math.PI * 2),
   };
   state.enemies.push(entity);
@@ -73,6 +81,7 @@ export function updateWaveDirector(
   dt: number,
   viewRadius = 560
 ): void {
+  const diff = getDifficultyProfile(state.difficulty);
   const phase = getActiveWavePhase(stage, state.elapsedSec);
   const endlessExtraScale = state.elapsedSec > stage.durationSec
     ? 1 + (state.elapsedSec - stage.durationSec) / 90
@@ -81,21 +90,20 @@ export function updateWaveDirector(
   // Immediate opening pack so the player engages action within 2 seconds
   if (!state.triggeredEvents.has('init-opening-pack')) {
     state.triggeredEvents.add('init-opening-pack');
-    const firstEnemyId = phase.pool[0]?.enemyId;
-    const starterDef = firstEnemyId ? catalog.enemies[firstEnemyId] : undefined;
-    if (starterDef) {
-      for (let i = 0; i < 6; i++) {
-        const angle = (Math.PI * 2 * i) / 6 + state.rng.range(-0.2, 0.2);
-        const dist = state.rng.range(240, 310);
-        spawnEnemyInstance(
-          state,
-          starterDef,
-          state.player.x + Math.cos(angle) * dist,
-          state.player.y + Math.sin(angle) * dist,
-          phase.hpScale,
-          phase.speedScale
-        );
-      }
+    for (let i = 0; i < 6; i++) {
+      const openEnemyId = i === 0 ? phase.pool[0]?.enemyId : pickWeightedEnemy(state, phase);
+      const starterDef = openEnemyId ? catalog.enemies[openEnemyId] : undefined;
+      if (!starterDef) continue;
+      const angle = (Math.PI * 2 * i) / 6 + state.rng.range(-0.2, 0.2);
+      const dist = state.rng.range(240, 310);
+      spawnEnemyInstance(
+        state,
+        starterDef,
+        state.player.x + Math.cos(angle) * dist,
+        state.player.y + Math.sin(angle) * dist,
+        phase.hpScale,
+        phase.speedScale
+      );
     }
   }
 
@@ -107,7 +115,7 @@ export function updateWaveDirector(
       if (bossDef) {
         for (let i = 0; i < ev.count; i++) {
           const angle = (Math.PI * 2 * i) / Math.max(1, ev.count) + state.rng.range(-0.25, 0.25);
-          const dist = viewRadius * 0.88;
+          const dist = ev.count > 1 ? viewRadius * 0.72 : viewRadius * 0.85;
           spawnEnemyInstance(
             state,
             bossDef,
@@ -130,12 +138,13 @@ export function updateWaveDirector(
   }
 
   // Regular wave spawning
-  const cap = Math.min(280, Math.round(phase.maxCount * stage.spawnRateMult));
+  const effectiveSpawnRate = stage.spawnRateMult * diff.spawnRateMult;
+  const cap = Math.min(340, Math.round(phase.maxCount * stage.spawnRateMult * diff.capMult));
   if (state.enemies.length >= cap) {
     return;
   }
 
-  const interval = phase.spawnInterval / stage.spawnRateMult;
+  const interval = phase.spawnInterval / effectiveSpawnRate;
   state.spawnAccumulator += dt;
   let spawnsThisTick = 0;
   while (state.spawnAccumulator >= interval && state.enemies.length < cap && spawnsThisTick < 5) {

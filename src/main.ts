@@ -3,7 +3,12 @@ import { SoundEngine } from './audio/soundEngine.ts';
 import { CATALOG } from './data/catalog.ts';
 import { AssetStore } from './engine/assetLoader.ts';
 import { SanctuaryRenderer } from './engine/renderer.ts';
-import { selectUpgradeAndResume, stepSimulation, triggerActiveSkill } from './game/simulation.ts';
+import {
+  selectUpgradeAndResume,
+  stepSimulation,
+  triggerActiveGadget,
+  triggerActiveSkill,
+} from './game/simulation.ts';
 import { createInitialGameState, type GameState } from './game/state.ts';
 import {
   computeMetaBonuses,
@@ -38,6 +43,7 @@ const resultDialog = document.getElementById('result-dialog') as HTMLDialogEleme
 const hudXpFill = document.getElementById('hud-xp-fill') as HTMLElement;
 const hudLevel = document.getElementById('hud-level') as HTMLElement;
 const hudTimer = document.getElementById('hud-timer') as HTMLElement;
+const hudDiffBadge = document.getElementById('hud-diff-badge') as HTMLElement;
 const hudKills = document.getElementById('hud-kills') as HTMLElement;
 const hudGold = document.getElementById('hud-gold') as HTMLElement;
 const hudWeaponSlots = document.getElementById('hud-weapon-slots') as HTMLElement;
@@ -53,6 +59,12 @@ const touchSkillBtn = document.getElementById('touch-skill-btn') as HTMLButtonEl
 const touchSkillImg = document.getElementById('touch-skill-img') as HTMLImageElement;
 const touchSkillCd = document.getElementById('touch-skill-cd') as HTMLElement;
 const touchSkillName = document.getElementById('touch-skill-name') as HTMLElement;
+
+const touchGadgetBtn = document.getElementById('touch-gadget-btn') as HTMLButtonElement;
+const touchGadgetImg = document.getElementById('touch-gadget-img') as HTMLImageElement;
+const touchGadgetEmpty = document.getElementById('touch-gadget-empty') as HTMLElement;
+const touchGadgetCount = document.getElementById('touch-gadget-count') as HTMLElement;
+const touchGadgetName = document.getElementById('touch-gadget-name') as HTMLElement;
 
 installDialogClosedByFallback();
 lockNonDismissibleDialog(levelUpDialog);
@@ -96,6 +108,7 @@ function renderHud(state: GameState): void {
   hudXpFill.style.width = `${xpRatio}%`;
   hudLevel.textContent = `Lv.${state.player.level}`;
   hudTimer.textContent = formatClock(state.elapsedSec);
+  hudDiffBadge.hidden = state.difficulty !== 'hard';
   hudKills.textContent = String(state.kills);
   hudGold.textContent = String(state.goldEarned);
 
@@ -160,6 +173,33 @@ function renderHud(state: GameState): void {
       touchSkillBtn.style.setProperty('--cd-deg', '360deg');
     }
   }
+
+  const held = state.player.heldGadgets;
+  if (held.length > 0) {
+    const nextGadgetId = held[0]!;
+    const gDef = CATALOG.gadgets[nextGadgetId];
+    const gUrl = gDef ? assets.getUrl(gDef.spriteId) : '';
+    touchGadgetBtn.classList.remove('is-empty');
+    touchGadgetBtn.classList.add('has-gadget');
+    touchGadgetBtn.disabled = false;
+    touchGadgetBtn.style.setProperty('--gadget-color', gDef?.color ?? '#60a5fa');
+    if (touchGadgetImg.getAttribute('src') !== gUrl) {
+      touchGadgetImg.src = gUrl;
+    }
+    touchGadgetImg.hidden = false;
+    touchGadgetEmpty.hidden = true;
+    touchGadgetCount.hidden = false;
+    touchGadgetCount.textContent = `×${held.length}`;
+    touchGadgetName.textContent = gDef?.name ?? '主动道具';
+  } else {
+    touchGadgetBtn.classList.add('is-empty');
+    touchGadgetBtn.classList.remove('has-gadget');
+    touchGadgetBtn.disabled = true;
+    touchGadgetImg.hidden = true;
+    touchGadgetEmpty.hidden = false;
+    touchGadgetCount.hidden = true;
+    touchGadgetName.textContent = '道具 (空)';
+  }
 }
 
 function settleRunProgress(state: GameState, victory: boolean): void {
@@ -171,6 +211,12 @@ function settleRunProgress(state: GameState, victory: boolean): void {
   save.bestSurvivalSec = Math.max(save.bestSurvivalSec, Math.floor(state.elapsedSec));
   if (victory && !save.clearedStages.includes(state.stageId)) {
     save.clearedStages.push(state.stageId);
+  }
+  if (victory && state.difficulty === 'hard') {
+    if (!save.clearedHardStages) save.clearedHardStages = [];
+    if (!save.clearedHardStages.includes(state.stageId)) {
+      save.clearedHardStages.push(state.stageId);
+    }
   }
   for (const cid of state.discoveredCodexIds) {
     if (!save.unlockedCodexIds.includes(cid)) {
@@ -315,7 +361,7 @@ function startRun(sel: LobbySelection): void {
   const stage = CATALOG.stages[sel.stageId] ?? Object.values(CATALOG.stages)[0]!;
   const bonuses = computeMetaBonuses(save);
 
-  activeRun = createInitialGameState(char, stage, bonuses);
+  activeRun = createInitialGameState(char, stage, bonuses, Date.now(), sel.difficulty);
   // Unlock starting character portrait entry if matched in gallery
   runSettled = false;
   modalActive = false;
@@ -367,6 +413,12 @@ window.addEventListener('keydown', (e) => {
     return;
   }
 
+  if (activeRun && activeRun.phase === 'playing' && (e.code === 'KeyQ' || e.code === 'KeyF')) {
+    e.preventDefault();
+    handleGadgetTrigger();
+    return;
+  }
+
   if (activeRun && activeRun.phase === 'levelup' && levelUpDialog.open) {
     const idx = e.key === '1' ? 0 : e.key === '2' ? 1 : e.key === '3' ? 2 : -1;
     if (idx >= 0) {
@@ -399,6 +451,30 @@ function handleSkillTrigger(): void {
     renderHud(activeRun);
   }
 }
+
+let lastGadgetTriggerMs = 0;
+function handleGadgetTrigger(): void {
+  if (!activeRun || activeRun.phase !== 'playing') return;
+  const now = performance.now();
+  if (now - lastGadgetTriggerMs < 140) return;
+  sound.unlock();
+  if (triggerActiveGadget(activeRun, CATALOG)) {
+    lastGadgetTriggerMs = now;
+    sound.processEvents(activeRun.events);
+    renderHud(activeRun);
+  }
+}
+
+touchGadgetBtn.addEventListener('pointerdown', (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  handleGadgetTrigger();
+});
+
+touchGadgetBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  handleGadgetTrigger();
+});
 
 touchSkillBtn.addEventListener('pointerdown', (e) => {
   e.stopPropagation();
