@@ -6,8 +6,9 @@ import {
   triggerActiveGadget,
   triggerActiveSkill,
 } from '../src/game/simulation.ts';
-import { createInitialGameState, type EnemyEntity, type GameState } from '../src/game/state.ts';
+import { createInitialGameState, getHeroFormModifiers, type EnemyEntity, type GameState } from '../src/game/state.ts';
 import { spawnEnemyInstance } from '../src/game/waveDirector.ts';
+import { applyUpgradeChoice } from '../src/game/upgradeSystem.ts';
 
 function makeDummyEnemy(state: GameState, overrides: Partial<EnemyEntity> = {}): EnemyEntity {
   return {
@@ -280,5 +281,84 @@ describe('simulation', () => {
     expect(hBoss.speed).toBeGreaterThan(nBoss.speed);
     expect(hBoss.damage).toBeGreaterThan(nBoss.damage);
     expect(hBoss.bossShootTimer).toBeLessThan(nBoss.bossShootTimer);
+  });
+
+  it('toggles hero forms via active skill, executes tree starting items & mechanics, and tracks codex discoveries', () => {
+    const stage = CATALOG.stages['stage-sanctuary']!;
+
+    // All 5 heroes switch primary <-> awakened cleanly on active skill cast
+    for (const char of Object.values(CATALOG.characters)) {
+      const state = createInitialGameState(char, stage, {}, 901);
+      expect(state.player.heroForm).toBe('primary');
+      expect(triggerActiveSkill(state, CATALOG)).toBe(true);
+      expect(state.player.heroForm).toBe('awakened');
+      state.player.skillCooldownTimer = 0;
+      expect(triggerActiveSkill(state, CATALOG)).toBe(true);
+      expect(state.player.heroForm).toBe('primary');
+    }
+
+    // Skill tree config grants starting gadgets, passives, and mechanic triggers
+    const classic = CATALOG.characters['char-classic']!;
+    const configured = createInitialGameState(classic, stage, {}, 902, 'normal', {
+      startingGadgets: ['gadget-shield'],
+      startingPassives: ['pas-chalice'],
+      unlockedMechanics: ['classic-tremor-step'],
+      skillCdMult: 0.76,
+    });
+    expect(configured.player.heldGadgets).toEqual(['gadget-shield']);
+    expect(configured.passives.some((p) => p.passiveId === 'pas-chalice')).toBe(true);
+    expect(configured.discoveredWeaponIds.has('wpn-belly-wave')).toBe(true);
+    expect(configured.discoveredWeaponIds.has('pas-chalice')).toBe(true);
+    expect(configured.discoveredWeaponIds.has('gadget-shield')).toBe(true);
+
+    // Switch Classic to awakened and walk 260px -> triggers tremor aura zone
+    triggerActiveSkill(configured, CATALOG);
+    configured.weapons = [];
+    configured.zones = [];
+    let sawTremorZone = false;
+    for (let i = 0; i < 120; i++) {
+      stepSimulation(configured, { x: 1, y: 0 }, stage, CATALOG, 1 / 60);
+      if (configured.zones.some((z) => z.weaponId === 'classic-tremor-step')) {
+        sawTremorZone = true;
+      }
+    }
+    expect(sawTremorZone).toBe(true);
+
+    // Nezha awakened form boosts projectile amount and Kitsune awakened fires periodic homing foxfire
+    const nezha = CATALOG.characters['char-nezha']!;
+    const nState = createInitialGameState(nezha, stage, {}, 903, 'normal', {
+      unlockedMechanics: ['nezha-ashura-fury', 'nezha-lotus-wake'],
+    });
+    triggerActiveSkill(nState, CATALOG);
+    expect(getHeroFormModifiers(nState).amountAdd).toBe(3);
+
+    const kitsune = CATALOG.characters['char-kitsune']!;
+    const kState = createInitialGameState(kitsune, stage, {}, 904, 'normal', {
+      unlockedMechanics: ['kitsune-twin-spirit'],
+    });
+    kState.weapons = [];
+    kState.enemies.push(makeDummyEnemy(kState, { x: 140, y: 0, hp: 500, maxHp: 500 }));
+    triggerActiveSkill(kState, CATALOG);
+    kState.projectiles = [];
+    kState.player.formTimer = 1.79;
+    stepSimulation(kState, { x: 0, y: 0 }, stage, CATALOG, 1 / 60);
+    expect(kState.projectiles.some((p) => p.weaponId === 'skill-fox-illusion')).toBe(true);
+
+    // Encountering bosses/enemies & picking upgrades records codex discoveries
+    spawnEnemyInstance(configured, CATALOG.enemies['boss-thunder']!, 220, 0, 1, 1);
+    expect(configured.discoveredEnemyIds.has('boss-thunder')).toBe(true);
+    applyUpgradeChoice(
+      configured,
+      {
+        kind: 'weapon',
+        id: 'wpn-calm-prism',
+        title: '静站翠玉光棱',
+        subtitle: '',
+        description: '',
+        spriteId: 'laugh-calm',
+      },
+      CATALOG
+    );
+    expect(configured.discoveredWeaponIds.has('wpn-calm-prism')).toBe(true);
   });
 });

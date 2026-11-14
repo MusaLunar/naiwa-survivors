@@ -35,7 +35,10 @@
 
           <div class="hud-timer-wrap">
             <div class="hud-timer" id="hud-timer">00:00</div>
-            <span id="hud-diff-badge" class="hud-diff-badge" hidden>炼狱高难</span>
+            <div class="hud-badges-row">
+              <span id="hud-diff-badge" class="hud-diff-badge" hidden>炼狱高难</span>
+              <span id="hud-form-badge" class="hud-form-badge">壁垒态</span>
+            </div>
           </div>
 
           <div class="hud-right-stats">
@@ -101,6 +104,7 @@
         <label><input id="pause-bgm-toggle" type="checkbox" /> 开启圣殿节拍</label>
         <label><input id="pause-shake-toggle" type="checkbox" /> 受击屏幕震动</label>
         <label><input id="pause-dmg-toggle" type="checkbox" /> 显示伤害数字</label>
+        <label><input id="pause-clear-fx-toggle" type="checkbox" /> 精简透明弹幕（防遮挡）</label>
       </div>
       <div class="dialog-actions">
         <button id="pause-quit-btn" type="button" class="btn-secondary">撤离回圣殿（保留已拾功德）</button>
@@ -121,6 +125,7 @@
           </form>
         </div>
       </div>
+      <div id="codex-section-tabs" class="codex-section-tabs" role="tablist" aria-label="图鉴大类切换"></div>
       <div id="codex-tabs" class="codex-tabs"></div>
       <div class="codex-layout">
         <div id="codex-grid" class="codex-grid"></div>

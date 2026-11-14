@@ -46,6 +46,8 @@ export type ActiveSkillId =
   | 'skill-fox-illusion'
   | 'skill-starfall-judgment';
 
+export type HeroFormId = 'primary' | 'awakened';
+
 export interface ActiveSkillDef {
   id: ActiveSkillId;
   name: string;
@@ -54,6 +56,44 @@ export interface ActiveSkillDef {
   spriteId: string;
   color: string;
   accentColor: string;
+  primaryFormName: string;
+  awakenedFormName: string;
+  primaryFormDesc: string;
+  awakenedFormDesc: string;
+  awakenedColor: string;
+}
+
+export type SkillNodeCategory =
+  | 'stat'
+  | 'skill_upgrade'
+  | 'mechanic'
+  | 'passive'
+  | 'active_skill'
+  | 'starting_item';
+
+export interface SkillTreeNodeDef {
+  id: string;
+  characterId: string;
+  name: string;
+  category: SkillNodeCategory;
+  spriteId: string;
+  description: string;
+  maxRank: number;
+  baseCost: number;
+  costStep: number;
+  requires?: string[];
+  tier: number;
+  col: number;
+  statBonus?: Partial<Record<StatKey, number>>;
+  skillCdReduction?: number;
+  skillPowerBonus?: number;
+  skillRadiusBonus?: number;
+  mechanicId?: string;
+  startingGadgetId?: GadgetId;
+  startingPassiveId?: string;
+  xpMultBonus?: number;
+  thornsBonus?: number;
+  startGoldBonus?: number;
 }
 
 export type StatKey =
@@ -141,6 +181,8 @@ export interface EnemyDef {
   spriteId: string;
   isMedallion?: boolean;
   aiBehavior?: EnemyBehavior;
+  behaviorSummary?: string;
+  skillsSummary?: string[];
   lore: string;
   baseHp: number;
   speed: number;
@@ -219,14 +261,18 @@ export interface GameSettings {
   screenShake: boolean;
   damageNumbers: boolean;
   codexPreviewAll: boolean;
+  clearProjectiles?: boolean;
 }
 
 export interface SaveData {
   version: number;
   gold: number;
   metaRanks: Record<string, number>;
+  skillTreeRanks?: Record<string, Record<string, number>>;
   unlockedCharacters: string[];
   unlockedCodexIds: string[];
+  discoveredEnemyIds?: string[];
+  discoveredWeaponIds?: string[];
   clearedStages: string[];
   clearedHardStages?: string[];
   bestKills: number;
@@ -243,6 +289,7 @@ export interface GameCatalog {
   enemies: Record<string, EnemyDef>;
   stages: Record<string, StageDef>;
   metaUpgrades: MetaUpgradeDef[];
+  skillTrees: Record<string, SkillTreeNodeDef[]>;
   gadgets: Record<GadgetId, GadgetDef>;
 }
 

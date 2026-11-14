@@ -1,6 +1,7 @@
 import type { GadgetId, GameCatalog, StageDef } from '../data/types.ts';
 import {
   getDifficultyProfile,
+  getHeroFormModifiers,
   xpRequiredForLevel,
   type EnemyEntity,
   type GameState,
@@ -108,6 +109,36 @@ function spawnEnemyBlastZone(
   });
 }
 
+function spawnSantaFirecracker(state: GameState, fromX: number, fromY: number): void {
+  const nearest = state.enemies.find(
+    (e) => e.hp > 0 && Math.hypot(e.x - fromX, e.y - fromY) <= 360
+  );
+  const tx = nearest ? nearest.x : fromX + Math.cos(state.rng.range(0, Math.PI * 2)) * 120;
+  const ty = nearest ? nearest.y : fromY + Math.sin(state.rng.range(0, Math.PI * 2)) * 120;
+  const flight = 0.28;
+  state.projectiles.push({
+    uid: state.nextUid++,
+    weaponId: 'skill-golden-feast',
+    behavior: 'lobbed',
+    x: fromX,
+    y: fromY,
+    vx: (tx - fromX) / flight,
+    vy: (ty - fromY) / flight,
+    radius: 14,
+    blastRadius: 88 * state.player.area,
+    damage: 58 * state.player.might * state.player.skillPowerMult,
+    pierce: 1,
+    knockback: 140,
+    life: flight,
+    maxLife: flight,
+    color: '#ff9f43',
+    accentColor: '#ffeaa7',
+    spriteId: 'wpn-icon-blush-burst',
+    spinAngle: 0,
+    hitIds: new Set<number>(),
+  });
+}
+
 function damagePlayer(state: GameState, rawDamage: number): boolean {
   if (state.player.invulnTimer > 0) {
     return false;
@@ -145,7 +176,8 @@ function damagePlayer(state: GameState, rawDamage: number): boolean {
     return false;
   }
 
-  const dmg = Math.max(1, Math.round(rawDamage - state.player.armor));
+  const formMod = getHeroFormModifiers(state);
+  const dmg = Math.max(1, Math.round(rawDamage - (state.player.armor + formMod.armorAdd)));
   state.player.hp -= dmg;
   state.player.invulnTimer = 0.42;
   state.shakeTimer = 0.18;
@@ -208,6 +240,14 @@ function handleEnemyKilled(
   state.kills += 1;
   state.events.push({ type: 'kill', intensity: enemy.isBoss ? 1 : 0.3 });
   spawnParticles(state, enemy.x, enemy.y, enemy.isBoss ? '#ffd84d' : '#f7d354', enemy.isBoss ? 22 : 6);
+
+  if (
+    state.characterId === 'char-santa' &&
+    state.player.heroForm === 'awakened' &&
+    state.rng.next() < (state.player.unlockedMechanics.includes('santa-gold-cracker') ? 0.24 : 0.14)
+  ) {
+    spawnSantaFirecracker(state, enemy.x, enemy.y);
+  }
 
   if (enemy.aiBehavior === 'splitter' && state.enemies.length < 360) {
     const tinyDef = catalog.enemies['enm-tiny'];
@@ -1082,7 +1122,20 @@ function updateEnemies(
     // Player contact damage
     const hitDist = e.radius + state.player.radius * 0.78;
     if (playerDist <= hitDist && state.player.invulnTimer <= 0) {
-      damagePlayer(state, e.damage);
+      const hurt = damagePlayer(state, e.damage);
+      if (hurt && state.player.thorns > 0) {
+        const thornDmg = state.player.thorns * state.player.might;
+        const primarySlot = state.weapons[0];
+        for (const near of state.enemies) {
+          if (near.hp <= 0) continue;
+          const dx = near.x - px;
+          const dy = near.y - py;
+          if (dx * dx + dy * dy <= 108 * 108) {
+            applyDamageToEnemy(state, near, thornDmg, 220, px, py, primarySlot);
+          }
+        }
+        spawnParticles(state, px, py, '#fde047', 10, 170);
+      }
     }
   }
 
@@ -1239,7 +1292,9 @@ function updateDeployables(state: GameState, dt: number): void {
 function updatePickups(state: GameState, catalog: GameCatalog, dt: number): void {
   const px = state.player.x;
   const py = state.player.y;
-  const magnetR2 = state.player.magnetRadius * state.player.magnetRadius;
+  const formMod = getHeroFormModifiers(state);
+  const effMagnet = state.player.magnetRadius * formMod.magnetMult;
+  const magnetR2 = effMagnet * effMagnet;
   const superMagnet = state.player.activeMagnetTimer > 0;
 
   for (let i = state.pickups.length - 1; i >= 0; i--) {
@@ -1263,6 +1318,7 @@ function updatePickups(state: GameState, catalog: GameCatalog, dt: number): void
       state.pickups.splice(i, 1);
       const gadgetId = pickupKindToGadgetId(p.kind);
       if (gadgetId) {
+        state.discoveredWeaponIds.add(gadgetId);
         if (state.player.heldGadgets.length >= 3) {
           state.player.heldGadgets.shift();
         }
@@ -1287,18 +1343,33 @@ function updatePickups(state: GameState, catalog: GameCatalog, dt: number): void
         case 'xp_small':
         case 'xp_medium':
         case 'xp_large':
-          state.player.xp += p.value;
+          state.player.xp += Math.max(1, Math.round(p.value * state.player.xpMult));
           state.events.push({ type: 'pickup_xp' });
           break;
         case 'gold': {
-          const gained = Math.max(1, Math.round(p.value * state.player.greed));
+          const gained = Math.max(1, Math.round(p.value * (state.player.greed + formMod.greedAdd)));
           state.goldEarned += gained;
           state.events.push({ type: 'pickup_gold' });
+          if (
+            state.characterId === 'char-santa' &&
+            state.player.heroForm === 'awakened' &&
+            state.player.unlockedMechanics.includes('santa-gold-cracker') &&
+            state.rng.next() < 0.35
+          ) {
+            spawnSantaFirecracker(state, px, py);
+          }
           break;
         }
         case 'gold_bag': {
-          const gained = Math.max(5, Math.round(p.value * state.player.greed));
+          const gained = Math.max(5, Math.round(p.value * (state.player.greed + formMod.greedAdd)));
           state.goldEarned += gained;
+          if (
+            state.characterId === 'char-santa' &&
+            state.player.heroForm === 'awakened' &&
+            state.player.unlockedMechanics.includes('santa-gold-cracker')
+          ) {
+            spawnSantaFirecracker(state, px, py);
+          }
           state.floatingTexts.push({
             x: px,
             y: py - 32,
@@ -1467,21 +1538,34 @@ export function triggerActiveSkill(state: GameState, catalog: GameCatalog): bool
   const char = catalog.characters[state.characterId];
   if (!char) return false;
   const skill = char.activeSkill;
-  const maxCd = Math.max(3.5, skill.cooldownSec * state.player.cooldown);
+  const formMod = getHeroFormModifiers(state);
+  const maxCd = Math.max(3.0, skill.cooldownSec * state.player.skillCdMult * state.player.cooldown);
   state.player.skillMaxCooldown = maxCd;
   state.player.skillCooldownTimer = maxCd;
 
+  // Toggle primary <-> awakened stance on every active skill cast
+  state.player.heroForm = state.player.heroForm === 'primary' ? 'awakened' : 'primary';
+  state.player.formTimer = 0;
+  state.player.formMeter = state.player.heroForm === 'awakened' ? 100 : 0;
+  const formLabel =
+    state.player.heroForm === 'awakened' ? skill.awakenedFormName : skill.primaryFormName;
+  const formColor = state.player.heroForm === 'awakened' ? skill.awakenedColor : skill.color;
+
   const px = state.player.x;
   const py = state.player.y;
-  const might = state.player.might;
-  const area = state.player.area;
+  const might = (state.player.might + formMod.mightAdd) * state.player.skillPowerMult;
+  const area = (state.player.area + formMod.areaAdd) * state.player.skillRadiusMult;
   const primarySlot = state.weapons[0];
 
   switch (skill.id) {
     case 'skill-roar-nova': {
+      const hasDualResonance = state.player.unlockedMechanics.includes('classic-dual-resonance');
       const radius = 260 * area;
       const r2 = radius * radius;
-      state.player.invulnTimer = Math.max(state.player.invulnTimer, 1.2);
+      state.player.invulnTimer = Math.max(
+        state.player.invulnTimer,
+        hasDualResonance ? 2.5 : 1.2
+      );
       state.projectiles = state.projectiles.filter((pr) => {
         if (pr.behavior !== 'enemy_orb') return true;
         const dx = pr.x - px;
@@ -1510,18 +1594,19 @@ export function triggerActiveSkill(state: GameState, catalog: GameCatalog): bool
         maxLife: 0.45,
         tickInterval: 0.5,
         tickTimer: 0,
-        color: skill.color,
+        color: formColor,
         accentColor: skill.accentColor,
         hitOnce: true,
         applied: true,
       });
-      spawnParticles(state, px, py, skill.color, 28, 250);
+      spawnParticles(state, px, py, formColor, 28, 250);
       state.shakeTimer = 0.35;
       state.shakeIntensity = 9;
       break;
     }
 
     case 'skill-blazing-dash': {
+      const hasAshura = state.player.unlockedMechanics.includes('nezha-ashura-fury');
       const fx = state.player.facingX || 1;
       const fy = state.player.facingY || 0;
       const norm = Math.hypot(fx, fy) || 1;
@@ -1545,7 +1630,7 @@ export function triggerActiveSkill(state: GameState, catalog: GameCatalog): bool
           maxLife: 3.2,
           tickInterval: 0.36,
           tickTimer: 0,
-          color: skill.color,
+          color: formColor,
           accentColor: skill.accentColor,
           hitOnce: false,
         });
@@ -1558,8 +1643,9 @@ export function triggerActiveSkill(state: GameState, catalog: GameCatalog): bool
 
       const landX = state.player.x;
       const landY = state.player.y;
-      for (let i = 0; i < 8; i++) {
-        const a = (Math.PI * 2 * i) / 8;
+      const bladeCount = hasAshura ? 12 : 8;
+      for (let i = 0; i < bladeCount; i++) {
+        const a = (Math.PI * 2 * i) / bladeCount;
         state.projectiles.push({
           uid: state.nextUid++,
           weaponId: skill.id,
@@ -1574,20 +1660,21 @@ export function triggerActiveSkill(state: GameState, catalog: GameCatalog): bool
           knockback: 140,
           life: 0.85,
           maxLife: 0.85,
-          color: skill.color,
+          color: formColor,
           accentColor: skill.accentColor,
           spriteId: 'emote-double-v',
           spinAngle: a,
           hitIds: new Set<number>(),
         });
       }
-      spawnParticles(state, landX, landY, skill.color, 26, 220);
+      spawnParticles(state, landX, landY, formColor, 26, 220);
       state.shakeTimer = 0.24;
       state.shakeIntensity = 6;
       break;
     }
 
     case 'skill-golden-feast': {
+      const hasJackpot = state.player.unlockedMechanics.includes('santa-jackpot-feast');
       const heal = Math.max(12, Math.round(state.player.maxHp * 0.3));
       state.player.hp = Math.min(state.player.maxHp, state.player.hp + heal);
       for (const p of state.pickups) {
@@ -1595,10 +1682,12 @@ export function triggerActiveSkill(state: GameState, catalog: GameCatalog): bool
           p.magnetized = true;
         }
       }
-      for (let i = 0; i < 6; i++) {
-        const a = (Math.PI * 2 * i) / 6;
-        const tx = px + Math.cos(a) * 165;
-        const ty = py + Math.sin(a) * 165;
+      const boxCount = hasJackpot ? 12 : 6;
+      for (let i = 0; i < boxCount; i++) {
+        const a = (Math.PI * 2 * i) / boxCount;
+        const dist = i % 2 === 0 ? 165 : 230;
+        const tx = px + Math.cos(a) * dist;
+        const ty = py + Math.sin(a) * dist;
         const flightTime = 0.38;
         state.projectiles.push({
           uid: state.nextUid++,
@@ -1615,7 +1704,7 @@ export function triggerActiveSkill(state: GameState, catalog: GameCatalog): bool
           knockback: 210,
           life: flightTime,
           maxLife: flightTime,
-          color: skill.color,
+          color: formColor,
           accentColor: skill.accentColor,
           spriteId: 'pickup-chest',
           spinAngle: 0,
@@ -1627,7 +1716,7 @@ export function triggerActiveSkill(state: GameState, catalog: GameCatalog): bool
         kind: 'gold_bag',
         x: px + 26,
         y: py - 18,
-        value: 15,
+        value: hasJackpot ? 24 : 15,
         magnetized: false,
         bobSeed: state.rng.range(0, Math.PI * 2),
       });
@@ -1636,13 +1725,20 @@ export function triggerActiveSkill(state: GameState, catalog: GameCatalog): bool
     }
 
     case 'skill-fox-illusion': {
+      const hasNineTails = state.player.unlockedMechanics.includes('kitsune-nine-tails');
       state.player.skillBuffTimer = Math.max(state.player.skillBuffTimer, 4.5);
       state.player.invulnTimer = Math.max(state.player.invulnTimer, 1.2);
       for (const slot of state.weapons) {
         slot.cooldownTimer = Math.min(slot.cooldownTimer, 0.08);
       }
-      for (let i = 0; i < 12; i++) {
-        const a = (Math.PI * 2 * i) / 12;
+      if (hasNineTails) {
+        state.projectiles = state.projectiles.filter(
+          (pr) => pr.behavior !== 'enemy_orb' || Math.hypot(pr.x - px, pr.y - py) > 220
+        );
+      }
+      const orbCount = hasNineTails ? 24 : 12;
+      for (let i = 0; i < orbCount; i++) {
+        const a = (Math.PI * 2 * i) / orbCount;
         state.projectiles.push({
           uid: state.nextUid++,
           weaponId: skill.id,
@@ -1653,11 +1749,11 @@ export function triggerActiveSkill(state: GameState, catalog: GameCatalog): bool
           vy: Math.sin(a) * 420,
           radius: 18,
           damage: 65 * might,
-          pierce: 2,
+          pierce: hasNineTails ? 4 : 2,
           knockback: 75,
           life: 2.2,
           maxLife: 2.2,
-          color: skill.color,
+          color: formColor,
           accentColor: skill.accentColor,
           spriteId: 'wpn-icon-heart-star',
           spinAngle: 0,
@@ -1665,16 +1761,19 @@ export function triggerActiveSkill(state: GameState, catalog: GameCatalog): bool
           splitOnHit: true,
         });
       }
-      spawnParticles(state, px, py, skill.color, 26, 220);
+      spawnParticles(state, px, py, formColor, 26, 220);
       break;
     }
 
     case 'skill-starfall-judgment': {
-      state.freezeTimer = Math.max(state.freezeTimer, 3.0);
+      const hasSupernova = state.player.unlockedMechanics.includes('galaxy-supernova');
+      const hasWell = state.player.unlockedMechanics.includes('galaxy-gravity-star');
+      state.freezeTimer = Math.max(state.freezeTimer, hasSupernova ? 3.8 : 3.0);
+      const maxTargets = hasSupernova ? 14 : 10;
       const candidates = state.enemies
         .filter((e) => e.hp > 0 && Math.hypot(e.x - px, e.y - py) <= 640)
         .sort((a, b) => b.hp - a.hp)
-        .slice(0, 10);
+        .slice(0, maxTargets);
 
       const strikeTargets: Array<{ x: number; y: number }> =
         candidates.length > 0
@@ -1692,7 +1791,7 @@ export function triggerActiveSkill(state: GameState, catalog: GameCatalog): bool
           const dx = enemy.x - pt.x;
           const dy = enemy.y - pt.y;
           if (dx * dx + dy * dy <= (pillarRadius + enemy.radius) ** 2) {
-            applyDamageToEnemy(state, enemy, dmg, 180, pt.x, pt.y, primarySlot);
+            applyDamageToEnemy(state, enemy, dmg, hasWell ? -140 : 180, pt.x, pt.y, primarySlot);
           }
         }
         state.zones.push({
@@ -1708,13 +1807,13 @@ export function triggerActiveSkill(state: GameState, catalog: GameCatalog): bool
           maxLife: 0.45,
           tickInterval: 0.5,
           tickTimer: 0,
-          color: skill.color,
+          color: formColor,
           accentColor: skill.accentColor,
           hitOnce: true,
           applied: true,
         });
       }
-      spawnParticles(state, px, py, skill.color, 28, 240);
+      spawnParticles(state, px, py, formColor, 28, 240);
       state.shakeTimer = 0.3;
       state.shakeIntensity = 8;
       break;
@@ -1723,12 +1822,12 @@ export function triggerActiveSkill(state: GameState, catalog: GameCatalog): bool
 
   state.floatingTexts.push({
     x: state.player.x,
-    y: state.player.y - 42,
-    vy: -38,
-    text: `${skill.name}!`,
-    color: skill.accentColor,
-    life: 1.05,
-    maxLife: 1.05,
+    y: state.player.y - 44,
+    vy: -40,
+    text: `${skill.name} · 【${formLabel}】!`,
+    color: formColor,
+    life: 1.15,
+    maxLife: 1.15,
     scale: 1.28,
   });
   state.events.push({ type: 'skill_cast' });
@@ -1839,13 +1938,17 @@ export function stepSimulation(
   }
 
   state.elapsedSec += dt;
+  const formMod = getHeroFormModifiers(state);
 
   // Player regeneration, invulnerability, active skill, gadget & buff timers
   if (state.player.invulnTimer > 0) {
     state.player.invulnTimer = Math.max(0, state.player.invulnTimer - dt);
   }
   if (state.player.skillCooldownTimer > 0) {
-    state.player.skillCooldownTimer = Math.max(0, state.player.skillCooldownTimer - dt);
+    state.player.skillCooldownTimer = Math.max(
+      0,
+      state.player.skillCooldownTimer - dt * formMod.skillRechargeMult
+    );
   }
   if (state.player.skillBuffTimer > 0) {
     state.player.skillBuffTimer = Math.max(0, state.player.skillBuffTimer - dt);
@@ -1865,8 +1968,9 @@ export function stepSimulation(
   if (state.freezeTimer > 0) {
     state.freezeTimer = Math.max(0, state.freezeTimer - dt);
   }
-  if (state.player.regen > 0 && state.player.hp < state.player.maxHp) {
-    state.player.hp = Math.min(state.player.maxHp, state.player.hp + state.player.regen * dt);
+  const totalRegen = state.player.regen + formMod.regenAdd;
+  if (totalRegen > 0 && state.player.hp < state.player.maxHp) {
+    state.player.hp = Math.min(state.player.maxHp, state.player.hp + totalRegen * dt);
   }
 
   // Periodic tactical supply gadget spawn nearby so players encounter active items regularly
@@ -1889,7 +1993,7 @@ export function stepSimulation(
   // Player movement
   const speedBoost =
     (state.player.skillBuffTimer > 0 ? 1.32 : 1) * (state.player.frenzyTimer > 0 ? 1.2 : 1);
-  const effectiveSpeed = state.player.moveSpeed * speedBoost;
+  const effectiveSpeed = state.player.moveSpeed * speedBoost * formMod.speedMult;
   const mag = Math.hypot(input.x, input.y);
   if (mag > 0.01) {
     const nx = input.x / Math.max(1, mag);
@@ -1899,12 +2003,233 @@ export function stepSimulation(
     state.player.facingX = nx;
     state.player.facingY = ny;
     state.player.walkPhase += dt * 11;
+    state.player.moveDistAccum += effectiveSpeed * dt;
+    if (state.characterId === 'char-nezha' && state.player.heroForm === 'primary') {
+      state.player.formMeter = Math.min(100, state.player.formMeter + 18 * dt);
+    }
   } else {
     state.player.vx = 0;
     state.player.vy = 0;
   }
   state.player.x += state.player.vx * dt;
   state.player.y += state.player.vy * dt;
+
+  // Signature character form & skill-tree continuous mechanics
+  const px = state.player.x;
+  const py = state.player.y;
+  const formMight = state.player.might + formMod.mightAdd;
+  const formArea = state.player.area + formMod.areaAdd;
+  const primarySlot = state.weapons[0];
+  state.player.formTimer += dt;
+
+  if (
+    state.characterId === 'char-classic' &&
+    state.player.heroForm === 'awakened' &&
+    state.player.unlockedMechanics.includes('classic-tremor-step') &&
+    state.player.moveDistAccum >= 260
+  ) {
+    state.player.moveDistAccum -= 260;
+    const rad = 135 * formArea;
+    for (const enemy of state.enemies) {
+      if (enemy.hp <= 0) continue;
+      if (Math.hypot(enemy.x - px, enemy.y - py) <= rad + enemy.radius) {
+        applyDamageToEnemy(state, enemy, 55 * formMight, 200, px, py, primarySlot);
+      }
+    }
+    state.zones.push({
+      uid: state.nextUid++,
+      weaponId: 'classic-tremor-step',
+      kind: 'aura',
+      x: px,
+      y: py,
+      radius: rad,
+      damage: 0,
+      knockback: 0,
+      life: 0.3,
+      maxLife: 0.3,
+      tickInterval: 0.4,
+      tickTimer: 0,
+      color: '#ff9f1c',
+      accentColor: '#fff6d1',
+      hitOnce: true,
+      applied: true,
+    });
+  }
+
+  if (state.characterId === 'char-classic') {
+    if (state.player.heroForm === 'awakened' && state.player.formTimer >= 2.4) {
+      state.player.formTimer = 0;
+      const rad = 130 * formArea;
+      for (const enemy of state.enemies) {
+        if (enemy.hp <= 0) continue;
+        if (Math.hypot(enemy.x - px, enemy.y - py) <= rad + enemy.radius) {
+          applyDamageToEnemy(state, enemy, 58 * formMight, 190, px, py, primarySlot);
+        }
+      }
+      state.zones.push({
+        uid: state.nextUid++,
+        weaponId: 'skill-roar-nova',
+        kind: 'aura',
+        x: px,
+        y: py,
+        radius: rad,
+        damage: 0,
+        knockback: 0,
+        life: 0.28,
+        maxLife: 0.28,
+        tickInterval: 0.4,
+        tickTimer: 0,
+        color: '#ff9f1c',
+        accentColor: '#fff6d1',
+        hitOnce: true,
+        applied: true,
+      });
+    } else if (
+      state.player.heroForm === 'primary' &&
+      state.player.unlockedMechanics.includes('classic-dual-resonance') &&
+      state.player.formTimer >= 1.8
+    ) {
+      state.player.formTimer = 0;
+      for (const enemy of state.enemies) {
+        if (enemy.hp <= 0) continue;
+        if (Math.hypot(enemy.x - px, enemy.y - py) <= 95 + enemy.radius) {
+          applyDamageToEnemy(state, enemy, 28 * formMight, 240, px, py, primarySlot);
+        }
+      }
+    }
+  } else if (state.characterId === 'char-nezha' && state.player.heroForm === 'awakened') {
+    if (state.player.formTimer >= 0.5) {
+      state.player.formTimer = 0;
+      const hasLotus = state.player.unlockedMechanics.includes('nezha-lotus-wake');
+      if (hasLotus && mag > 0.01) {
+        state.zones.push({
+          uid: state.nextUid++,
+          weaponId: 'nezha-lotus-wake',
+          kind: 'zone',
+          x: px,
+          y: py,
+          radius: 56 * formArea,
+          damage: 24 * formMight,
+          knockback: 30,
+          life: 1.8,
+          maxLife: 1.8,
+          tickInterval: 0.4,
+          tickTimer: 0,
+          color: '#ff2e63',
+          accentColor: '#ffd480',
+          hitOnce: false,
+        });
+      } else {
+        const scorchR = 85 * formArea;
+        for (const enemy of state.enemies) {
+          if (enemy.hp <= 0) continue;
+          if (Math.hypot(enemy.x - px, enemy.y - py) <= scorchR + enemy.radius) {
+            applyDamageToEnemy(state, enemy, 26 * formMight, 45, px, py, primarySlot);
+          }
+        }
+      }
+    }
+  } else if (state.characterId === 'char-kitsune' && state.player.heroForm === 'awakened') {
+    if (state.player.formTimer >= 1.8) {
+      state.player.formTimer = 0;
+      const hasTwin = state.player.unlockedMechanics.includes('kitsune-twin-spirit');
+      const spiritCount = hasTwin ? 4 : 2;
+      for (let i = 0; i < spiritCount; i++) {
+        const a = (Math.PI * 2 * i) / spiritCount + state.elapsedSec;
+        state.projectiles.push({
+          uid: state.nextUid++,
+          weaponId: 'skill-fox-illusion',
+          behavior: 'homing',
+          x: px,
+          y: py,
+          vx: Math.cos(a) * 390,
+          vy: Math.sin(a) * 390,
+          radius: 15,
+          damage: 46 * formMight,
+          pierce: hasTwin ? 4 : 2,
+          knockback: 65,
+          life: 1.9,
+          maxLife: 1.9,
+          color: '#c77dff',
+          accentColor: '#ffd6e7',
+          spriteId: 'wpn-icon-heart-star',
+          spinAngle: 0,
+          hitIds: new Set<number>(),
+          splitOnHit: true,
+        });
+      }
+    }
+  } else if (state.characterId === 'char-galaxy') {
+    if (state.player.heroForm === 'primary' && state.player.formTimer >= 2.0) {
+      state.player.formTimer = 0;
+      const rad = 125 * formArea;
+      for (const enemy of state.enemies) {
+        if (enemy.hp <= 0) continue;
+        if (Math.hypot(enemy.x - px, enemy.y - py) <= rad + enemy.radius) {
+          applyDamageToEnemy(state, enemy, 38 * formMight, 250, px, py, primarySlot);
+        }
+      }
+      state.zones.push({
+        uid: state.nextUid++,
+        weaponId: 'skill-starfall-judgment',
+        kind: 'aura',
+        x: px,
+        y: py,
+        radius: rad,
+        damage: 0,
+        knockback: 0,
+        life: 0.28,
+        maxLife: 0.28,
+        tickInterval: 0.4,
+        tickTimer: 0,
+        color: '#70a1ff',
+        accentColor: '#e0edff',
+        hitOnce: true,
+        applied: true,
+      });
+    } else if (state.player.heroForm === 'awakened' && state.player.formTimer >= 2.2) {
+      state.player.formTimer = 0;
+      const target = state.enemies
+        .filter((e) => e.hp > 0 && Math.hypot(e.x - px, e.y - py) <= 560)
+        .sort((a, b) => b.hp - a.hp)[0];
+      if (target) {
+        const hasWell = state.player.unlockedMechanics.includes('galaxy-gravity-star');
+        const boltRad = 75 * formArea;
+        for (const enemy of state.enemies) {
+          if (enemy.hp <= 0) continue;
+          if (Math.hypot(enemy.x - target.x, enemy.y - target.y) <= boltRad + enemy.radius) {
+            applyDamageToEnemy(
+              state,
+              enemy,
+              115 * formMight,
+              hasWell ? -130 : 120,
+              target.x,
+              target.y,
+              primarySlot
+            );
+          }
+        }
+        state.zones.push({
+          uid: state.nextUid++,
+          weaponId: 'skill-starfall-judgment',
+          kind: 'lightning',
+          x: target.x,
+          y: target.y,
+          radius: boltRad,
+          damage: 0,
+          knockback: 0,
+          life: 0.36,
+          maxLife: 0.36,
+          tickInterval: 0.4,
+          tickTimer: 0,
+          color: '#a29bfe',
+          accentColor: '#e0edff',
+          hitOnce: true,
+          applied: true,
+        });
+      }
+    }
+  }
 
   // Enemies, spatial hash, wave director, weapons, projectiles, zones, deployables, pickups
   updateWaveDirector(state, stage, catalog, dt);

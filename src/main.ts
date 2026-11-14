@@ -11,9 +11,10 @@ import {
 } from './game/simulation.ts';
 import { createInitialGameState, type GameState } from './game/state.ts';
 import {
-  computeMetaBonuses,
+  computeCharacterTreeEffects,
   loadSaveData,
   persistSaveData,
+  recordRunDiscoveries,
 } from './storage/saveStore.ts';
 import { renderCodexDialog } from './ui/codex.ts';
 import {
@@ -44,6 +45,7 @@ const hudXpFill = document.getElementById('hud-xp-fill') as HTMLElement;
 const hudLevel = document.getElementById('hud-level') as HTMLElement;
 const hudTimer = document.getElementById('hud-timer') as HTMLElement;
 const hudDiffBadge = document.getElementById('hud-diff-badge') as HTMLElement;
+const hudFormBadge = document.getElementById('hud-form-badge') as HTMLElement;
 const hudKills = document.getElementById('hud-kills') as HTMLElement;
 const hudGold = document.getElementById('hud-gold') as HTMLElement;
 const hudWeaponSlots = document.getElementById('hud-weapon-slots') as HTMLElement;
@@ -153,11 +155,20 @@ function renderHud(state: GameState): void {
   const charDef = CATALOG.characters[state.characterId];
   if (charDef) {
     const skill = charDef.activeSkill;
+    const isAwakened = state.player.heroForm === 'awakened';
+    const formName = isAwakened ? skill.awakenedFormName : skill.primaryFormName;
+    const formColor = isAwakened ? skill.awakenedColor : skill.color;
+
+    hudFormBadge.textContent = formName;
+    hudFormBadge.classList.toggle('is-awakened', isAwakened);
+    touchSkillBtn.classList.toggle('is-awakened', isAwakened);
+    touchSkillBtn.style.setProperty('--skill-color', formColor);
+
     const iconUrl = assets.getUrl(skill.spriteId);
     if (touchSkillImg.getAttribute('src') !== iconUrl) {
       touchSkillImg.src = iconUrl;
     }
-    touchSkillName.textContent = skill.name;
+    touchSkillName.textContent = isAwakened ? `${skill.name} · 觉` : `${skill.name} · 主`;
     if (state.player.skillCooldownTimer > 0) {
       touchSkillBtn.classList.remove('is-ready');
       touchSkillBtn.classList.add('is-cooldown');
@@ -223,6 +234,7 @@ function settleRunProgress(state: GameState, victory: boolean): void {
       save.unlockedCodexIds.push(cid);
     }
   }
+  recordRunDiscoveries(save, state.discoveredEnemyIds, state.discoveredWeaponIds);
   persistSaveData(save);
 }
 
@@ -359,9 +371,18 @@ function startRun(sel: LobbySelection): void {
   sound.startBgm();
   const char = CATALOG.characters[sel.characterId] ?? Object.values(CATALOG.characters)[0]!;
   const stage = CATALOG.stages[sel.stageId] ?? Object.values(CATALOG.stages)[0]!;
-  const bonuses = computeMetaBonuses(save);
+  const treeEffects = computeCharacterTreeEffects(save, char.id, CATALOG);
 
-  activeRun = createInitialGameState(char, stage, bonuses, Date.now(), sel.difficulty);
+  activeRun = createInitialGameState(
+    char,
+    stage,
+    {},
+    Date.now(),
+    sel.difficulty,
+    treeEffects
+  );
+  recordRunDiscoveries(save, [], activeRun.discoveredWeaponIds);
+  persistSaveData(save);
   // Unlock starting character portrait entry if matched in gallery
   runSettled = false;
   modalActive = false;
@@ -382,7 +403,7 @@ function renderLobby(): void {
     onSaveUpdated: () => persistSaveData(save),
     onStartRun: startRun,
     onOpenCodex: () => {
-      renderCodexDialog(codexDialog, save, (previewAll) => {
+      renderCodexDialog(codexDialog, save, assets, (previewAll) => {
         save.settings.codexPreviewAll = previewAll;
         persistSaveData(save);
       });

@@ -150,26 +150,44 @@ export function renderPauseDialog(
   const bgmCheck = dialog.querySelector<HTMLInputElement>('#pause-bgm-toggle');
   const shakeCheck = dialog.querySelector<HTMLInputElement>('#pause-shake-toggle');
   const dmgCheck = dialog.querySelector<HTMLInputElement>('#pause-dmg-toggle');
+  const clearFxCheck = dialog.querySelector<HTMLInputElement>('#pause-clear-fx-toggle');
+
+  let current = { ...settings };
 
   if (sfxCheck) {
-    sfxCheck.checked = settings.sfxEnabled;
-    sfxCheck.onchange = () =>
-      callbacks.onSettingsChange({ ...settings, sfxEnabled: sfxCheck.checked });
+    sfxCheck.checked = current.sfxEnabled;
+    sfxCheck.onchange = () => {
+      current = { ...current, sfxEnabled: sfxCheck.checked };
+      callbacks.onSettingsChange(current);
+    };
   }
   if (bgmCheck) {
-    bgmCheck.checked = settings.bgmEnabled;
-    bgmCheck.onchange = () =>
-      callbacks.onSettingsChange({ ...settings, bgmEnabled: bgmCheck.checked });
+    bgmCheck.checked = current.bgmEnabled;
+    bgmCheck.onchange = () => {
+      current = { ...current, bgmEnabled: bgmCheck.checked };
+      callbacks.onSettingsChange(current);
+    };
   }
   if (shakeCheck) {
-    shakeCheck.checked = settings.screenShake;
-    shakeCheck.onchange = () =>
-      callbacks.onSettingsChange({ ...settings, screenShake: shakeCheck.checked });
+    shakeCheck.checked = current.screenShake;
+    shakeCheck.onchange = () => {
+      current = { ...current, screenShake: shakeCheck.checked };
+      callbacks.onSettingsChange(current);
+    };
   }
   if (dmgCheck) {
-    dmgCheck.checked = settings.damageNumbers;
-    dmgCheck.onchange = () =>
-      callbacks.onSettingsChange({ ...settings, damageNumbers: dmgCheck.checked });
+    dmgCheck.checked = current.damageNumbers;
+    dmgCheck.onchange = () => {
+      current = { ...current, damageNumbers: dmgCheck.checked };
+      callbacks.onSettingsChange(current);
+    };
+  }
+  if (clearFxCheck) {
+    clearFxCheck.checked = current.clearProjectiles ?? true;
+    clearFxCheck.onchange = () => {
+      current = { ...current, clearProjectiles: clearFxCheck.checked };
+      callbacks.onSettingsChange(current);
+    };
   }
 
   const resumeBtn = dialog.querySelector<HTMLButtonElement>('#pause-resume-btn');

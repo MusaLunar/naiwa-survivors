@@ -1,5 +1,5 @@
 import type { GameCatalog, WeaponDef, WeaponLevelSpec } from '../data/types.ts';
-import type { EnemyEntity, GameState, WeaponSlot } from './state.ts';
+import { getHeroFormModifiers, type EnemyEntity, type GameState, type WeaponSlot } from './state.ts';
 
 const queryBuf: number[] = [];
 
@@ -48,7 +48,7 @@ export function applyDamageToEnemy(
     enemy.knockbackVy += (dy / len) * knockback * resist;
   }
 
-  if (state.floatingTexts.length < 140) {
+  if (state.floatingTexts.length < (isCrit ? 75 : 44)) {
     state.floatingTexts.push({
       x: enemy.x + state.rng.range(-10, 10),
       y: enemy.y - enemy.radius * 0.8,
@@ -66,10 +66,11 @@ export function applyDamageToEnemy(
 }
 
 function fireWeapon(state: GameState, _slot: WeaponSlot, def: WeaponDef, spec: WeaponLevelSpec): void {
+  const formMod = getHeroFormModifiers(state);
   const frenzyMight = state.player.frenzyTimer > 0 ? 1.4 : 1;
-  const dmg = spec.damage * state.player.might * frenzyMight;
-  const area = spec.area * state.player.area;
-  const amount = Math.max(1, spec.amount + state.player.amountBonus);
+  const dmg = spec.damage * (state.player.might + formMod.mightAdd) * frenzyMight;
+  const area = spec.area * (state.player.area + formMod.areaAdd);
+  const amount = Math.max(1, spec.amount + state.player.amountBonus + formMod.amountAdd);
   const duration = spec.duration * state.player.duration;
   const px = state.player.x;
   const py = state.player.y;
@@ -327,8 +328,11 @@ function fireWeapon(state: GameState, _slot: WeaponSlot, def: WeaponDef, spec: W
 }
 
 export function updateWeapons(state: GameState, catalog: GameCatalog, dt: number): void {
+  const formMod = getHeroFormModifiers(state);
   const hasteMult =
-    (state.player.skillBuffTimer > 0 ? 1.85 : 1) * (state.player.frenzyTimer > 0 ? 1.65 : 1);
+    (state.player.skillBuffTimer > 0 ? 1.85 : 1) *
+    (state.player.frenzyTimer > 0 ? 1.65 : 1) *
+    formMod.hasteMult;
   const frenzyMight = state.player.frenzyTimer > 0 ? 1.4 : 1;
 
   // 1. Cooldown-driven active weapons
@@ -365,10 +369,10 @@ export function updateWeapons(state: GameState, catalog: GameCatalog, dt: number
     const def = catalog.weapons[slot.weaponId];
     if (!def || def.behavior !== 'orbit') continue;
     const spec = def.levels[Math.min(slot.level - 1, def.levels.length - 1)]!;
-    const count = Math.max(1, spec.amount + state.player.amountBonus);
-    const orbitRadius = spec.area * state.player.area;
+    const count = Math.max(1, spec.amount + state.player.amountBonus + formMod.amountAdd);
+    const orbitRadius = spec.area * (state.player.area + formMod.areaAdd);
     const orbHitRadius = def.isEvolved ? 24 : 18;
-    const dmg = spec.damage * state.player.might * frenzyMight;
+    const dmg = spec.damage * (state.player.might + formMod.mightAdd) * frenzyMight;
 
     for (let k = 0; k < count; k++) {
       const a = state.orbitAngle + (Math.PI * 2 * k) / count;

@@ -177,35 +177,37 @@ export class SanctuaryRenderer {
     ctx.save();
     ctx.translate(-camX, -camY);
 
-    // 1. Floor Zones (aura, sanctuary banner zones, lightning circles)
+    const clearFx = settings.clearProjectiles ?? true;
+
+    // 1. Friendly Floor Zones (translucent underlays so mobs & enemy telegraphs stay clear)
     for (const z of state.zones) {
       const ratio = Math.max(0, z.life / z.maxLife);
       if (z.kind === 'aura') {
         ctx.save();
         ctx.strokeStyle = z.color;
-        ctx.lineWidth = 3 + ratio * 3;
-        ctx.globalAlpha = 0.25 + ratio * 0.55;
+        ctx.lineWidth = clearFx ? 2 : 3 + ratio * 3;
+        ctx.globalAlpha = (clearFx ? 0.14 : 0.25) + ratio * (clearFx ? 0.34 : 0.55);
         ctx.beginPath();
         ctx.arc(z.x, z.y, z.radius * (1 - ratio * 0.22), 0, Math.PI * 2);
         ctx.stroke();
 
-        const grad = ctx.createRadialGradient(z.x, z.y, z.radius * 0.2, z.x, z.y, z.radius);
+        const grad = ctx.createRadialGradient(z.x, z.y, z.radius * 0.25, z.x, z.y, z.radius);
         grad.addColorStop(0, 'rgba(244, 197, 66, 0)');
-        grad.addColorStop(1, 'rgba(244, 197, 66, 0.22)');
+        grad.addColorStop(1, clearFx ? 'rgba(244, 197, 66, 0.11)' : 'rgba(244, 197, 66, 0.22)');
         ctx.fillStyle = grad;
         ctx.fill();
         ctx.restore();
       } else if (z.kind === 'zone') {
         ctx.save();
         const pulse = 0.85 + Math.sin(state.elapsedSec * 7) * 0.15;
-        ctx.globalAlpha = Math.min(1, z.life * 2) * 0.35;
+        ctx.globalAlpha = Math.min(1, z.life * 2) * (clearFx ? 0.14 : 0.35);
         ctx.fillStyle = z.color;
         ctx.beginPath();
         ctx.arc(z.x, z.y, z.radius, 0, Math.PI * 2);
         ctx.fill();
-        ctx.globalAlpha = Math.min(1, z.life * 2) * 0.78;
+        ctx.globalAlpha = Math.min(1, z.life * 2) * (clearFx ? 0.45 : 0.78);
         ctx.strokeStyle = z.accentColor;
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = clearFx ? 1.8 : 2.5;
         ctx.beginPath();
         ctx.arc(z.x, z.y, z.radius * pulse, 0, Math.PI * 2);
         ctx.stroke();
@@ -214,55 +216,9 @@ export class SanctuaryRenderer {
         if (crest) {
           ctx.translate(z.x, z.y);
           ctx.rotate(state.elapsedSec * 0.6);
-          ctx.globalAlpha = Math.min(1, z.life * 2) * 0.45;
+          ctx.globalAlpha = Math.min(1, z.life * 2) * (clearFx ? 0.18 : 0.45);
           this.drawSpriteFitted(crest, 0, 0, z.radius * 1.65, false, false);
         }
-        ctx.restore();
-      } else if (z.kind === 'enemy_blast') {
-        const progress = Math.max(0, Math.min(1, 1 - z.life / Math.max(0.01, z.maxLife)));
-        ctx.save();
-        ctx.strokeStyle = z.color;
-        ctx.fillStyle = 'rgba(251, 146, 60, 0.16)';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.arc(z.x, z.y, z.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = 'rgba(239, 68, 68, 0.36)';
-        ctx.beginPath();
-        ctx.arc(z.x, z.y, z.radius * progress, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      } else if (z.kind === 'blackhole') {
-        const fade = Math.min(1, z.life * 1.6);
-        ctx.save();
-        ctx.globalAlpha = fade;
-        const grad = ctx.createRadialGradient(z.x, z.y, 12, z.x, z.y, z.radius);
-        grad.addColorStop(0, 'rgba(15, 7, 32, 0.92)');
-        grad.addColorStop(0.28, 'rgba(126, 34, 206, 0.42)');
-        grad.addColorStop(0.68, 'rgba(168, 85, 247, 0.14)');
-        grad.addColorStop(1, 'rgba(168, 85, 247, 0)');
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(z.x, z.y, z.radius, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.strokeStyle = '#c084fc';
-        ctx.lineWidth = 2.2;
-        for (let arm = 0; arm < 3; arm++) {
-          const base = state.elapsedSec * 3.4 + (Math.PI * 2 * arm) / 3;
-          ctx.beginPath();
-          ctx.arc(z.x, z.y, 44 + arm * 32, base, base + Math.PI * 1.15);
-          ctx.stroke();
-        }
-        ctx.fillStyle = '#090414';
-        ctx.strokeStyle = '#e9d5ff';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(z.x, z.y, 26, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
         ctx.restore();
       }
     }
@@ -609,26 +565,210 @@ export class SanctuaryRenderer {
       }
     }
 
-    // 4. Player Hero
+    // 4. Friendly Beams & Lightning (drawn behind Player & Enemy danger layers)
+    for (const z of state.zones) {
+      const alpha = Math.max(0, z.life / z.maxLife);
+      if (z.kind === 'beam' && z.x2 !== undefined && z.y2 !== undefined) {
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.globalAlpha = alpha * (clearFx ? 0.25 : 0.45);
+        ctx.strokeStyle = z.color;
+        ctx.lineWidth = z.radius * (clearFx ? 1.05 : 1.4);
+        ctx.beginPath();
+        ctx.moveTo(z.x, z.y);
+        ctx.lineTo(z.x2, z.y2);
+        ctx.stroke();
+
+        ctx.globalAlpha = alpha * (clearFx ? 0.65 : 1);
+        ctx.strokeStyle = z.accentColor;
+        ctx.lineWidth = z.radius * 0.48;
+        ctx.beginPath();
+        ctx.moveTo(z.x, z.y);
+        ctx.lineTo(z.x2, z.y2);
+        ctx.stroke();
+        ctx.restore();
+      } else if (z.kind === 'lightning') {
+        ctx.save();
+        ctx.globalAlpha = alpha * (clearFx ? 0.42 : 0.88);
+        ctx.fillStyle = z.color;
+        ctx.beginPath();
+        ctx.arc(z.x, z.y, z.radius * (1.05 - alpha * 0.2), 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.globalAlpha = alpha * (clearFx ? 0.72 : 1);
+        ctx.strokeStyle = z.accentColor;
+        ctx.lineWidth = 4 * alpha + 1;
+        ctx.beginPath();
+        ctx.moveTo(z.x - 18, z.y - 260);
+        ctx.lineTo(z.x + 12, z.y - 140);
+        ctx.lineTo(z.x - 10, z.y - 60);
+        ctx.lineTo(z.x, z.y);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    // 5. Friendly Orbit Weapons & Friendly Projectiles (attenuated alpha in bullet storms)
+    const orbitNodes = getOrbitVisualNodes(state, catalog);
+    for (const node of orbitNodes) {
+      const orbImg = this.assets.getSprite(node.spriteId);
+      ctx.save();
+      ctx.globalAlpha = clearFx ? 0.68 : 0.95;
+      if (!clearFx) {
+        ctx.shadowColor = node.color;
+        ctx.shadowBlur = node.isEvolved ? 14 : 8;
+      }
+      if (orbImg) {
+        this.drawSpriteFitted(orbImg, node.x, node.y, node.radius * 1.9, false, false);
+      } else {
+        ctx.fillStyle = node.color;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    const friendlyCount = state.projectiles.length;
+    const friendlyAlpha = !clearFx
+      ? 1
+      : friendlyCount > 28
+        ? 0.42
+        : friendlyCount > 14
+          ? 0.62
+          : 0.84;
+
+    for (const pr of state.projectiles) {
+      if (pr.behavior === 'enemy_orb') continue;
+
+      if (pr.behavior === 'homing') {
+        const spr = pr.spriteId ? this.assets.getSprite(pr.spriteId) : undefined;
+        ctx.save();
+        ctx.globalAlpha = friendlyAlpha;
+        if (spr) {
+          if (!clearFx) {
+            ctx.globalAlpha = 0.35;
+            ctx.fillStyle = pr.color;
+            ctx.beginPath();
+            ctx.arc(pr.x, pr.y, pr.radius * 0.95, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = friendlyAlpha;
+          }
+          this.drawSpriteFitted(spr, pr.x, pr.y, pr.radius * 1.9, false, false);
+        } else {
+          ctx.translate(pr.x, pr.y);
+          ctx.fillStyle = pr.color;
+          ctx.strokeStyle = pr.accentColor;
+          ctx.lineWidth = 1.6;
+          const r = pr.radius * 0.72;
+          ctx.beginPath();
+          ctx.moveTo(0, r * 0.65);
+          ctx.bezierCurveTo(-r * 1.3, -r * 0.35, -r * 0.7, -r * 1.35, 0, -r * 0.45);
+          ctx.bezierCurveTo(r * 0.7, -r * 1.35, r * 1.3, -r * 0.35, 0, r * 0.65);
+          ctx.fill();
+          ctx.stroke();
+        }
+        ctx.restore();
+        continue;
+      }
+
+      if (pr.behavior === 'lobbed') {
+        const progress = 1 - Math.max(0, pr.life / Math.max(0.01, pr.maxLife));
+        const arcOffset = Math.sin(progress * Math.PI) * 62;
+        const spr = pr.spriteId ? this.assets.getSprite(pr.spriteId) : undefined;
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.32)';
+        ctx.beginPath();
+        ctx.ellipse(pr.x, pr.y + 8, 12 + progress * 6, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        if (pr.blastRadius) {
+          ctx.strokeStyle = pr.color;
+          ctx.globalAlpha = (clearFx ? 0.16 : 0.25) + progress * 0.28;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(pr.x, pr.y, pr.blastRadius * (0.4 + 0.6 * progress), 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.globalAlpha = friendlyAlpha;
+        ctx.translate(pr.x, pr.y - arcOffset);
+        ctx.rotate(pr.spinAngle * 0.8);
+        if (spr) {
+          this.drawSpriteFitted(spr, 0, 0, 32, false, false);
+        } else {
+          ctx.fillStyle = pr.color;
+          ctx.beginPath();
+          ctx.arc(0, 0, 11, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+        continue;
+      }
+
+      const spr = pr.spriteId ? this.assets.getSprite(pr.spriteId) : undefined;
+      ctx.save();
+      ctx.globalAlpha = friendlyAlpha;
+      if (spr && pr.behavior === 'boomerang') {
+        ctx.translate(pr.x, pr.y);
+        ctx.rotate(pr.spinAngle);
+        ctx.strokeStyle = pr.color;
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.arc(0, 0, pr.radius, 0, Math.PI * 2);
+        ctx.stroke();
+        this.drawSpriteFitted(spr, 0, 0, pr.radius * 1.7, false, false);
+      } else {
+        ctx.fillStyle = pr.color;
+        ctx.strokeStyle = pr.accentColor;
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.arc(pr.x, pr.y, pr.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // 6. Player Hero (always drawn ABOVE friendly projectiles so your hero is unmistakable)
     const charDef = catalog.characters[state.characterId];
     const heroImg = charDef ? this.assets.getSprite(charDef.spriteId) : undefined;
     const px = state.player.x;
     const py = state.player.y;
+    const isAwakened = state.player.heroForm === 'awakened';
+    const formRingColor = charDef
+      ? isAwakened
+        ? charDef.activeSkill.awakenedColor
+        : charDef.activeSkill.color
+      : '#f4c542';
 
-    // Locator golden halo & active frenzy/haste aura beneath player
+    // Locator stance halo & active buff/gadget rings beneath player
     ctx.save();
-    ctx.strokeStyle = 'rgba(244, 197, 66, 0.72)';
-    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = formRingColor;
+    ctx.lineWidth = isAwakened ? 3.2 : 2.2;
+    ctx.globalAlpha = isAwakened ? 0.92 : 0.72;
     ctx.beginPath();
-    ctx.ellipse(px, py + 20, 22, 9, 0, 0, Math.PI * 2);
+    ctx.ellipse(px, py + 20, isAwakened ? 26 : 22, isAwakened ? 11 : 9, 0, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.fillStyle = 'rgba(244, 197, 66, 0.14)';
+    ctx.fillStyle = isAwakened ? `${formRingColor}38` : 'rgba(244, 197, 66, 0.14)';
     ctx.fill();
+
+    if (isAwakened) {
+      ctx.save();
+      ctx.strokeStyle = formRingColor;
+      ctx.setLineDash([7, 7]);
+      ctx.lineDashOffset = -state.elapsedSec * 28;
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.75;
+      ctx.beginPath();
+      ctx.arc(px, py, 33 + Math.sin(state.elapsedSec * 5) * 2.5, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
     if (state.player.skillBuffTimer > 0 || state.player.frenzyTimer > 0) {
-      const auraR = 34 + Math.sin(state.elapsedSec * 10) * 3;
+      const auraR = 37 + Math.sin(state.elapsedSec * 10) * 3;
       ctx.strokeStyle = state.player.frenzyTimer > 0 ? '#ff6b6b' : '#f472b6';
       ctx.lineWidth = 2.5;
-      ctx.globalAlpha = 0.75;
+      ctx.globalAlpha = 0.78;
       ctx.beginPath();
       ctx.arc(px, py, auraR, 0, Math.PI * 2);
       ctx.stroke();
@@ -637,7 +777,7 @@ export class SanctuaryRenderer {
       ctx.strokeStyle = '#60a5fa';
       ctx.setLineDash([8, 6]);
       ctx.lineWidth = 2.5;
-      ctx.globalAlpha = 0.82;
+      ctx.globalAlpha = 0.85;
       ctx.beginPath();
       ctx.arc(px, py, 46 + Math.sin(state.elapsedSec * 9) * 4, 0, Math.PI * 2);
       ctx.stroke();
@@ -649,14 +789,14 @@ export class SanctuaryRenderer {
       ctx.lineWidth = 3;
       ctx.globalAlpha = 0.92;
       ctx.beginPath();
-      ctx.arc(px, py, 39, 0, Math.PI * 2);
+      ctx.arc(px, py, 40, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
       for (let s = 0; s < state.player.shieldCharges; s++) {
         const a = state.elapsedSec * 3.5 + (Math.PI * 2 * s) / state.player.shieldCharges;
         ctx.fillStyle = '#fef08a';
         ctx.beginPath();
-        ctx.arc(px + Math.cos(a) * 39, py + Math.sin(a) * 39, 4.5, 0, Math.PI * 2);
+        ctx.arc(px + Math.cos(a) * 40, py + Math.sin(a) * 40, 4.5, 0, Math.PI * 2);
         ctx.fill();
       }
     }
@@ -687,176 +827,86 @@ export class SanctuaryRenderer {
     const hpW = 54;
     const hpX = px - hpW / 2;
     const hpY = py + 31;
-    ctx.fillStyle = 'rgba(10, 10, 14, 0.85)';
+    ctx.fillStyle = 'rgba(10, 10, 14, 0.88)';
     ctx.fillRect(hpX, hpY, hpW, 7);
     const hpFrac = Math.max(0, state.player.hp / Math.max(1, state.player.maxHp));
     ctx.fillStyle = hpFrac > 0.35 ? '#22c55e' : '#ef4444';
     ctx.fillRect(hpX + 1, hpY + 1, (hpW - 2) * hpFrac, 5);
 
-    // 5. Orbit Weapons
-    for (const node of getOrbitVisualNodes(state, catalog)) {
-      const orbImg = this.assets.getSprite(node.spriteId);
-      ctx.save();
-      ctx.shadowColor = node.color;
-      ctx.shadowBlur = node.isEvolved ? 14 : 8;
-      if (orbImg) {
-        this.drawSpriteFitted(orbImg, node.x, node.y, node.radius * 1.9, false, false);
-      } else {
-        ctx.fillStyle = node.color;
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
-    }
-
-    // 6. Projectiles
-    for (const pr of state.projectiles) {
-      if (pr.behavior === 'enemy_orb') {
-        ctx.save();
-        ctx.fillStyle = pr.color;
-        ctx.strokeStyle = pr.accentColor;
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.arc(pr.x, pr.y, pr.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
-        continue;
-      }
-
-      if (pr.behavior === 'homing') {
-        const spr = pr.spriteId ? this.assets.getSprite(pr.spriteId) : undefined;
-        ctx.save();
-        if (spr) {
-          ctx.globalAlpha = 0.35;
-          ctx.fillStyle = pr.color;
-          ctx.beginPath();
-          ctx.arc(pr.x, pr.y, pr.radius * 0.95, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.globalAlpha = 1;
-          this.drawSpriteFitted(spr, pr.x, pr.y, pr.radius * 2.0, false, false);
-        } else {
-          ctx.translate(pr.x, pr.y);
-          ctx.fillStyle = pr.color;
-          ctx.strokeStyle = pr.accentColor;
-          ctx.lineWidth = 1.8;
-          const r = pr.radius * 0.72;
-          ctx.beginPath();
-          ctx.moveTo(0, r * 0.65);
-          ctx.bezierCurveTo(-r * 1.3, -r * 0.35, -r * 0.7, -r * 1.35, 0, -r * 0.45);
-          ctx.bezierCurveTo(r * 0.7, -r * 1.35, r * 1.3, -r * 0.35, 0, r * 0.65);
-          ctx.fill();
-          ctx.stroke();
-        }
-        ctx.restore();
-        continue;
-      }
-
-      if (pr.behavior === 'lobbed') {
-        const progress = 1 - Math.max(0, pr.life / Math.max(0.01, pr.maxLife));
-        const arcOffset = Math.sin(progress * Math.PI) * 62;
-        const spr = pr.spriteId ? this.assets.getSprite(pr.spriteId) : undefined;
-        ctx.save();
-        // Ground target shadow
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
-        ctx.beginPath();
-        ctx.ellipse(pr.x, pr.y + 8, 12 + progress * 6, 6, 0, 0, Math.PI * 2);
-        ctx.fill();
-        if (pr.blastRadius) {
-          ctx.strokeStyle = pr.color;
-          ctx.globalAlpha = 0.25 + progress * 0.3;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.arc(pr.x, pr.y, pr.blastRadius * (0.4 + 0.6 * progress), 0, Math.PI * 2);
-          ctx.stroke();
-        }
-        ctx.globalAlpha = 1;
-        ctx.translate(pr.x, pr.y - arcOffset);
-        ctx.rotate(pr.spinAngle * 0.8);
-        if (spr) {
-          this.drawSpriteFitted(spr, 0, 0, 34, false, false);
-        } else {
-          ctx.fillStyle = pr.color;
-          ctx.beginPath();
-          ctx.arc(0, 0, 12, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.restore();
-        continue;
-      }
-
-      const spr = pr.spriteId ? this.assets.getSprite(pr.spriteId) : undefined;
-      if (spr && pr.behavior === 'boomerang') {
-        ctx.save();
-        ctx.translate(pr.x, pr.y);
-        ctx.rotate(pr.spinAngle);
-        ctx.strokeStyle = pr.color;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(0, 0, pr.radius, 0, Math.PI * 2);
-        ctx.stroke();
-        this.drawSpriteFitted(spr, 0, 0, pr.radius * 1.75, false, false);
-        ctx.restore();
-      } else {
-        ctx.save();
-        ctx.fillStyle = pr.color;
-        ctx.strokeStyle = pr.accentColor;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(pr.x, pr.y, pr.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
-      }
-    }
-
-    // 7. Beams & Lightning Strikes
+    // 7. TOP COMBAT DANGER LAYER: Hostile telegraphs (blackhole / bomb) + Enemy bullets ON TOP
     for (const z of state.zones) {
-      const alpha = Math.max(0, z.life / z.maxLife);
-      if (z.kind === 'beam' && z.x2 !== undefined && z.y2 !== undefined) {
+      if (z.kind === 'enemy_blast') {
+        const progress = Math.max(0, Math.min(1, 1 - z.life / Math.max(0.01, z.maxLife)));
         ctx.save();
-        ctx.lineCap = 'round';
-        ctx.globalAlpha = alpha * 0.45;
-        ctx.strokeStyle = z.color;
-        ctx.lineWidth = z.radius * 1.4;
+        ctx.strokeStyle = '#ffedd5';
+        ctx.fillStyle = 'rgba(251, 146, 60, 0.16)';
+        ctx.lineWidth = 2.6;
         ctx.beginPath();
-        ctx.moveTo(z.x, z.y);
-        ctx.lineTo(z.x2, z.y2);
+        ctx.arc(z.x, z.y, z.radius, 0, Math.PI * 2);
+        ctx.fill();
         ctx.stroke();
 
-        ctx.globalAlpha = alpha;
-        ctx.strokeStyle = z.accentColor;
-        ctx.lineWidth = z.radius * 0.55;
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.38)';
         ctx.beginPath();
-        ctx.moveTo(z.x, z.y);
-        ctx.lineTo(z.x2, z.y2);
-        ctx.stroke();
+        ctx.arc(z.x, z.y, z.radius * progress, 0, Math.PI * 2);
+        ctx.fill();
         ctx.restore();
-      } else if (z.kind === 'lightning') {
+      } else if (z.kind === 'blackhole') {
+        const fade = Math.min(1, z.life * 1.6);
         ctx.save();
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = z.color;
+        ctx.globalAlpha = fade;
+        const grad = ctx.createRadialGradient(z.x, z.y, 12, z.x, z.y, z.radius);
+        grad.addColorStop(0, 'rgba(15, 7, 32, 0.92)');
+        grad.addColorStop(0.28, 'rgba(126, 34, 206, 0.42)');
+        grad.addColorStop(0.68, 'rgba(168, 85, 247, 0.14)');
+        grad.addColorStop(1, 'rgba(168, 85, 247, 0)');
+        ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.arc(z.x, z.y, z.radius * (1.05 - alpha * 0.2), 0, Math.PI * 2);
+        ctx.arc(z.x, z.y, z.radius, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.strokeStyle = z.accentColor;
-        ctx.lineWidth = 5 * alpha + 1;
+        ctx.strokeStyle = '#c084fc';
+        ctx.lineWidth = 2.4;
+        for (let arm = 0; arm < 3; arm++) {
+          const base = state.elapsedSec * 3.4 + (Math.PI * 2 * arm) / 3;
+          ctx.beginPath();
+          ctx.arc(z.x, z.y, 44 + arm * 32, base, base + Math.PI * 1.15);
+          ctx.stroke();
+        }
+        ctx.fillStyle = '#090414';
+        ctx.strokeStyle = '#e9d5ff';
+        ctx.lineWidth = 2.2;
         ctx.beginPath();
-        ctx.moveTo(z.x - 18, z.y - 260);
-        ctx.lineTo(z.x + 12, z.y - 140);
-        ctx.lineTo(z.x - 10, z.y - 60);
-        ctx.lineTo(z.x, z.y);
+        ctx.arc(z.x, z.y, 26, 0, Math.PI * 2);
+        ctx.fill();
         ctx.stroke();
         ctx.restore();
       }
+    }
+
+    for (const pr of state.projectiles) {
+      if (pr.behavior !== 'enemy_orb') continue;
+      ctx.save();
+      ctx.strokeStyle = '#09090d';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.arc(pr.x, pr.y, pr.radius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = pr.color;
+      ctx.strokeStyle = pr.accentColor;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.arc(pr.x, pr.y, pr.radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
     }
 
     // 8. Particles
     for (const pt of state.particles) {
       ctx.save();
-      ctx.globalAlpha = Math.max(0, pt.life / pt.maxLife);
+      ctx.globalAlpha = Math.max(0, pt.life / pt.maxLife) * (clearFx ? 0.62 : 1);
       ctx.fillStyle = pt.color;
       ctx.beginPath();
       ctx.arc(pt.x, pt.y, pt.radius, 0, Math.PI * 2);

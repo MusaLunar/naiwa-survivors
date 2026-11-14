@@ -53,6 +53,7 @@ export function spawnEnemyInstance(
     wobbleSeed: state.rng.range(0, Math.PI * 2),
   };
   state.enemies.push(entity);
+  state.discoveredEnemyIds.add(def.id);
   if (def.codexGalleryId) {
     state.discoveredCodexIds.add(def.codexGalleryId);
   }

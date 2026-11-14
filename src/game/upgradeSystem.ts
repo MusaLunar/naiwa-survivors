@@ -234,6 +234,7 @@ function applyPassiveStatBonus(state: GameState, def: PassiveDef): void {
 /** Apply selected UpgradeChoice to `state`. */
 export function applyUpgradeChoice(state: GameState, choice: UpgradeChoice, catalog: GameCatalog): void {
   if (choice.kind === 'evolve' && choice.evolvedFromId) {
+    state.discoveredWeaponIds.add(choice.id);
     const idx = state.weapons.findIndex((w) => w.weaponId === choice.evolvedFromId);
     if (idx !== -1) {
       const prevDmg = state.weapons[idx]!.totalDamage;
@@ -250,6 +251,7 @@ export function applyUpgradeChoice(state: GameState, choice: UpgradeChoice, cata
   }
 
   if (choice.kind === 'weapon') {
+    state.discoveredWeaponIds.add(choice.id);
     const existing = state.weapons.find((w) => w.weaponId === choice.id);
     if (existing) {
       existing.level += 1;
@@ -260,6 +262,7 @@ export function applyUpgradeChoice(state: GameState, choice: UpgradeChoice, cata
   }
 
   if (choice.kind === 'passive') {
+    state.discoveredWeaponIds.add(choice.id);
     const def = catalog.passives[choice.id];
     if (!def) return;
     const existing = state.passives.find((p) => p.passiveId === choice.id);
