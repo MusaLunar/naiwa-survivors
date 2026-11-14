@@ -1,21 +1,56 @@
 import type { GameSettings } from '../data/types.ts';
 import type { SimEvent } from '../game/state.ts';
 
+const BATTLE_BGM_SRC = './assets/audio/battle-bgm.m4a';
+const BGM_VOLUME_SCALE = 0.45;
+
 /**
- * Zero-dependency Web Audio synthesizer for sanctuary sound effects and gentle background pulse.
+ * Web Audio sound effects synthesizer paired with streaming custom battle BGM playback.
  */
 export class SoundEngine {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
-  private bgmTimer: number | null = null;
-  private bgmStep = 0;
+  private bgmAudio: HTMLAudioElement | null = null;
+  private bgmWanted = false;
+  private readonly bgmSrc: string;
   private xpStreak = 0;
   private lastXpTime = 0;
   private lastHitTime = 0;
   private settings: GameSettings;
 
-  constructor(settings: GameSettings) {
+  constructor(settings: GameSettings, bgmSrc = BATTLE_BGM_SRC) {
     this.settings = { ...settings };
+    this.bgmSrc = bgmSrc;
+  }
+
+  private getBgmVolume(): number {
+    return Math.max(0, Math.min(1, this.settings.masterVolume * BGM_VOLUME_SCALE));
+  }
+
+  private ensureBgmAudio(): HTMLAudioElement | null {
+    if (typeof window === 'undefined' || typeof Audio === 'undefined') return null;
+    if (!this.bgmAudio) {
+      const audio = new Audio(this.bgmSrc);
+      audio.loop = true;
+      audio.preload = 'auto';
+      audio.volume = this.getBgmVolume();
+      this.bgmAudio = audio;
+    }
+    return this.bgmAudio;
+  }
+
+  private tryPlayBgm(): void {
+    if (!this.bgmWanted || !this.settings.bgmEnabled) return;
+    const audio = this.ensureBgmAudio();
+    if (!audio) return;
+    audio.volume = this.getBgmVolume();
+    if (!audio.paused) return;
+    const playPromise = audio.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+      void playPromise.catch(() => {
+        // Autoplay may wait until the next user gesture triggers unlock()
+      });
+    }
   }
 
   updateSettings(settings: GameSettings): void {
@@ -27,6 +62,9 @@ export class SoundEngine {
         0.03
       );
     }
+    if (this.bgmAudio) {
+      this.bgmAudio.volume = this.getBgmVolume();
+    }
     if (!this.settings.bgmEnabled) {
       this.stopBgm();
     }
@@ -36,16 +74,19 @@ export class SoundEngine {
     if (typeof window === 'undefined') return;
     const AudioCtx =
       window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!AudioCtx) return;
-
-    if (!this.ctx) {
-      this.ctx = new AudioCtx();
-      this.masterGain = this.ctx.createGain();
-      this.masterGain.gain.value = this.settings.masterVolume;
-      this.masterGain.connect(this.ctx.destination);
+    if (AudioCtx) {
+      if (!this.ctx) {
+        this.ctx = new AudioCtx();
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.value = this.settings.masterVolume;
+        this.masterGain.connect(this.ctx.destination);
+      }
+      if (this.ctx.state === 'suspended') {
+        void this.ctx.resume();
+      }
     }
-    if (this.ctx.state === 'suspended') {
-      void this.ctx.resume();
+    if (this.bgmWanted && this.settings.bgmEnabled) {
+      this.tryPlayBgm();
     }
   }
 
@@ -160,48 +201,18 @@ export class SoundEngine {
 
   startBgm(): void {
     if (!this.settings.bgmEnabled || typeof window === 'undefined') return;
-    if (this.bgmTimer !== null) return;
-    const scale = [220, 261.63, 293.66, 329.63, 392, 440, 392, 329.63];
-    const bass = [110, 110, 146.83, 146.83, 130.81, 130.81, 98, 110];
-    this.bgmTimer = window.setInterval(() => {
-      if (!this.settings.bgmEnabled || !this.ctx || !this.masterGain) return;
-      if (this.ctx.state !== 'running') return;
-      const step = this.bgmStep % scale.length;
-      this.bgmStep += 1;
-      const now = this.ctx.currentTime;
-
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(scale[step]!, now);
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(0.032, now + 0.03);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
-      osc.connect(gain);
-      gain.connect(this.masterGain);
-      osc.start(now);
-      osc.stop(now + 0.3);
-
-      if (step % 2 === 0) {
-        const bOsc = this.ctx.createOscillator();
-        const bGain = this.ctx.createGain();
-        bOsc.type = 'sine';
-        bOsc.frequency.setValueAtTime(bass[step]!, now);
-        bGain.gain.setValueAtTime(0.0001, now);
-        bGain.gain.linearRampToValueAtTime(0.04, now + 0.02);
-        bGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
-        bOsc.connect(bGain);
-        bGain.connect(this.masterGain);
-        bOsc.start(now);
-        bOsc.stop(now + 0.45);
-      }
-    }, 320);
+    this.bgmWanted = true;
+    this.tryPlayBgm();
   }
 
   stopBgm(): void {
-    if (this.bgmTimer !== null && typeof window !== 'undefined') {
-      window.clearInterval(this.bgmTimer);
-      this.bgmTimer = null;
+    this.bgmWanted = false;
+    if (!this.bgmAudio) return;
+    this.bgmAudio.pause();
+    try {
+      this.bgmAudio.currentTime = 0;
+    } catch {
+      // Ignore seek errors before audio metadata loads
     }
   }
 }
